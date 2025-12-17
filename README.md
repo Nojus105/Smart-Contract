@@ -1,25 +1,70 @@
 # Freelance Escrow DApp - Išmanioji Sutartis su Decentralizuota Aplikacija
 
-## 📋 Projekto Aprašymas
+## Projekto Aprašymas
 
 Šis projektas yra decentralizuota freelance escrow (garantinio depozito) sistema, sukurta Ethereum blockchain platformoje. Sistema leidžia klientams ir freelanceriams saugiai bendradarbiauti, užtikrinant skaidrumą, patikimumą ir apsaugą abiem šalims per išmaniąsias sutartis.
 
-### 🎯 Tikslas
+- [Freelance Escrow DApp - Išmanioji Sutartis su Decentralizuota Aplikacija](#freelance-escrow-dapp---išmanioji-sutartis-su-decentralizuota-aplikacija)
+  - [Projekto Aprašymas](#projekto-aprašymas)
+    - [Tikslas](#tikslas)
+  - [Verslo Modelis](#verslo-modelis)
+    - [Pagrindiniai Veikėjai](#pagrindiniai-veikėjai)
+    - [Verslo Logika](#verslo-logika)
+      - [**Projekto Sukūrimas**](#projekto-sukūrimas)
+      - [**Etapų Pridėjimas**](#etapų-pridėjimas)
+      - [**Projekto Pradžia ir Finansavimas**](#projekto-pradžia-ir-finansavimas)
+      - [**Darbo Atlikimas ir Pateikimas**](#darbo-atlikimas-ir-pateikimas)
+      - [**Etapo Patvirtinimas - Normalus Scenarijus**](#etapo-patvirtinimas---normalus-scenarijus)
+      - [**Auto-Patvirtinimas**](#auto-patvirtinimas)
+      - [**Ginčų Scenarijus**](#ginčų-scenarijus)
+      - [**Ginčo Sprendimas**](#ginčo-sprendimas)
+      - [**Projekto Užbaigimas**](#projekto-užbaigimas)
+      - [**Atšaukimo Scenarijai**](#atšaukimo-scenarijai)
+  - [Sekų Diagrama (Sequence Diagram)](#sekų-diagrama-sequence-diagram)
+    - [Normalus Darbo Eigos Scenarijus](#normalus-darbo-eigos-scenarijus)
+    - [Ginčo Scenarijus](#ginčo-scenarijus)
+    - [Auto-Patvirtinimo Scenarijus](#auto-patvirtinimo-scenarijus)
+  - [Išmaniosios Sutarties Funkcionalumas](#išmaniosios-sutarties-funkcionalumas)
+    - [Pagrindinės Funkcijos](#pagrindinės-funkcijos)
+    - [Saugos Mechanizmai](#saugos-mechanizmai)
+  - [Projekto Struktūra](#projekto-struktūra)
+  - [Technologijos](#technologijos)
+    - [Smart Contract](#smart-contract)
+    - [Front-End](#front-end)
+    - [Testing \& Deployment](#testing--deployment)
+  - [Instaliacija ir Paleidimas](#instaliacija-ir-paleidimas)
+    - [Reikalavimai](#reikalavimai)
+    - [1. Projekto Paruošimas](#1-projekto-paruošimas)
+    - [2. Kompiliavimas](#2-kompiliavimas)
+    - [3. Lokalus Testavimas](#3-lokalus-testavimas)
+    - [4. Sepolia Testnet Deployment](#4-sepolia-testnet-deployment)
+    - [5. Front-End Paleidimas](#5-front-end-paleidimas)
+  - [Etherscan Logų Peržiūra](#etherscan-logų-peržiūra)
+    - [Svarbūs Event'ai](#svarbūs-eventai)
+  - [Front-End Funkcionalumas](#front-end-funkcionalumas)
+    - [Minimum](#minimum)
+      - [Wallet Prijungimas](#wallet-prijungimas)
+      - [Klientui](#klientui)
+      - [Freelanceriui](#freelanceriui)
+      - [Arbitrui](#arbitrui)
+    - [Maximum](#maximum)
+      - [Extra Funkcijos](#extra-funkcijos)
+
+### Tikslas
 
 Sukurti išmaniąją sutartį ir decentralizuotą aplikaciją, kuri:
+
 - Įgyvendina saugų mokėjimo valdymą tarp kliento ir freelancerio
 - Palaiko etapinį (milestone-based) darbo apmokėjimą
 - Užtikrina ginčų sprendimo mechanizmą per neutralų arbitrą
 - Apsaugo abi šalis nuo sukčiavimo ir nesąžiningumo
 - Automatizuoja mokėjimus ir sutarčių vykdymą be tarpininkų
 
----
-
-## 👥 Verslo Modelis
+## Verslo Modelis
 
 ### Pagrindiniai Veikėjai
 
-1. **Klientas (Client)** 
+1. **Klientas (Client)**
    - Inicijuoja projektą ir jį finansuoja
    - Nustato projekto aprašymą, terminus ir etapus (milestones)
    - Vertina ir patvirtina freelancerio pateiktą darbą
@@ -39,7 +84,8 @@ Sukurti išmaniąją sutartį ir decentralizuotą aplikaciją, kuri:
 
 ### Verslo Logika
 
-#### 1️⃣ **Projekto Sukūrimas**
+#### **Projekto Sukūrimas**
+
 - Klientas sukuria naują projektą, nurodydamas:
   - Freelancerio adresą
   - Arbitro adresą
@@ -47,44 +93,51 @@ Sukurti išmaniąją sutartį ir decentralizuotą aplikaciją, kuri:
   - Terminą (deadline)
 - Sistema priskiria unikalų projekto ID
 
-#### 2️⃣ **Etapų Pridėjimas**
+#### **Etapų Pridėjimas**
+
 - Klientas prideda projekto etapus (milestones):
   - Kiekvienas etapas turi aprašymą
   - Kiekvienas etapas turi priskirta sumą (ETH)
   - Galima pridėti kelis etapus
 - Sistema suskaičiuoja bendrą projekto vertę
 
-#### 3️⃣ **Projekto Pradžia ir Finansavimas**
+#### **Projekto Pradžia ir Finansavimas**
+
 - Klientas įneša visą projekto sumą + 2% arbitro mokestį į escrow sutartį
 - Lėšos užšaldomas išmaniojoje sutartyje
 - Projekto statusas keičiamas į "InProgress"
 
-#### 4️⃣ **Darbo Atlikimas ir Pateikimas**
+#### **Darbo Atlikimas ir Pateikimas**
+
 - Freelanceris atlieka darbą pagal etapą
 - Freelanceris pateikia atliktą darbą su įrodymais (deliverable hash)
 - Etapo statusas keičiamas į "Submitted"
 - Laikmačiai pradeda skaičiuoti 7 dienų patvirtinimo terminą
 
-#### 5️⃣ **Etapo Patvirtinimas - Normalus Scenarijus**
+#### **Etapo Patvirtinimas - Normalus Scenarijus**
+
 - Klientas peržiūri pateiktą darbą
 - Jei darbas atitinka reikalavimus:
   - Klientas patvirtina etapą
   - Sistema automatiškai perveda ETH freelanceriui
   - Etapo statusas: "Approved"
 
-#### 6️⃣ **Auto-Patvirtinimas**
+#### **Auto-Patvirtinimas**
+
 - Jei klientas nereaguoja per 7 dienas po darbo pateikimo
 - Bet kas gali iškviesti auto-patvirtinimo funkciją
 - Sistema automatiškai perveda mokėjimą freelanceriui
 - Tai apsaugo freelancerį nuo neaktyvių klientų
 
-#### 7️⃣ **Ginčų Scenarijus**
+#### **Ginčų Scenarijus**
+
 - Jei klientas nesutinka su rezultatu:
   - Klientas ginčija etapą (disputes milestone)
   - Projekto statusas keičiamas į "Disputed"
   - Arbitras yra informuojamas
 
-#### 8️⃣ **Ginčo Sprendimas**
+#### **Ginčo Sprendimas**
+
 - Arbitras peržiūri projekto informaciją ir įrodymus
 - Arbitras priima sprendimą:
   - **Už freelancerį**: mokėjimas pervediamas freelanceriui
@@ -92,23 +145,23 @@ Sukurti išmaniąją sutartį ir decentralizuotą aplikaciją, kuri:
 - Arbitras gauna savo mokestį (2%)
 - Projektas grąžinamas į "InProgress" statusą
 
-#### 9️⃣ **Projekto Užbaigimas**
+#### **Projekto Užbaigimas**
+
 - Kai visi etapai patvirtinti:
   - Projekto statusas keičiamas į "Completed"
   - Jei arbitras nebuvo panaudotas, jam vis tiek išmokamas mokestis
   - Sutartis uždaroma
 
-#### 🔟 **Atšaukimo Scenarijai**
+#### **Atšaukimo Scenarijai**
+
 - **Prieš pradžią**: Klientas gali atšaukti projektą be nuobaudų
 - **Vykdymo metu**: Abi šalys gali susitarti ir gauti grąžinimą už neužbaigtus etapus
 
----
-
-## 🔄 Sekų Diagrama (Sequence Diagram)
+## Sekų Diagrama (Sequence Diagram)
 
 ### Normalus Darbo Eigos Scenarijus
 
-```
+```text
 Klientas          Išmanioji Sutartis          Freelanceris          Arbitras
    |                      |                         |                    |
    |--createProject()---->|                         |                    |
@@ -138,7 +191,7 @@ Klientas          Išmanioji Sutartis          Freelanceris          Arbitras
 
 ### Ginčo Scenarijus
 
-```
+```text
 Klientas          Išmanioji Sutartis          Freelanceris          Arbitras
    |                      |                         |                    |
    |                      |<--submitMilestone(1)----|                    |
@@ -156,7 +209,7 @@ Klientas          Išmanioji Sutartis          Freelanceris          Arbitras
 
 ### Auto-Patvirtinimo Scenarijus
 
-```
+```text
 Klientas          Išmanioji Sutartis          Freelanceris          Anyone
    |                      |                         |                    |
    |                      |<--submitMilestone(1)----|                    |
@@ -169,7 +222,7 @@ Klientas          Išmanioji Sutartis          Freelanceris          Anyone
 
 ---
 
-## 🎨 Išmaniosios Sutarties Funkcionalumas
+## Išmaniosios Sutarties Funkcionalumas
 
 ### Pagrindinės Funkcijos
 
@@ -188,18 +241,16 @@ Klientas          Išmanioji Sutartis          Freelanceris          Anyone
 
 ### Saugos Mechanizmai
 
-✅ **Access Control**: Kiekviena funkcija turi modifier'ius, kontroliuojančius, kas gali ją iškviesti  
-✅ **Reentrancy Protection**: Pirmiau keičiamas state, paskui siunčiami ETH  
-✅ **Validation**: Visos įvestys yra validuojamos  
-✅ **Status Checks**: Funkcijos veikia tik esant tam tikram projekto statusui  
-✅ **Time Locks**: Auto-patvirtinimas po 7 dienų apsaugo freelancerius  
-✅ **Events**: Visi svarbūs veiksmai logginami event'ais  
+ **Access Control**: Kiekviena funkcija turi modifier'ius, kontroliuojančius, kas gali ją iškviesti  
+ **Reentrancy Protection**: Pirmiau keičiamas state, paskui siunčiami ETH  
+ **Validation**: Visos įvestys yra validuojamos  
+ **Status Checks**: Funkcijos veikia tik esant tam tikram projekto statusui  
+ **Time Locks**: Auto-patvirtinimas po 7 dienų apsaugo freelancerius  
+ **Events**: Visi svarbūs veiksmai logginami event'ais  
 
----
+## Projekto Struktūra
 
-## 🚀 Projekto Struktūra
-
-```
+```text
 Smart-Contract/
 ├── contracts/
 │   ├── FreelanceEscrow.sol      # Pagrindinė išmanioji sutartis
@@ -221,17 +272,17 @@ Smart-Contract/
 └── README.md                    # Šis failas
 ```
 
----
-
-## 🛠️ Technologijos
+## Technologijos
 
 ### Smart Contract
+
 - **Solidity 0.8.19** - Išmaniosios sutarties kalba
 - **OpenZeppelin** - Saugūs library'ai
 - **Truffle** - Development framework
 - **Ganache** - Lokalus Ethereum tinklas
 
 ### Front-End
+
 - **React 18** - UI framework
 - **Vite** - Build tool
 - **Web3.js / Ethers.js** - Ethereum sąsaja
@@ -239,14 +290,13 @@ Smart-Contract/
 - **MetaMask** - Wallet integration
 
 ### Testing & Deployment
+
 - **Mocha/Chai** - Testavimo framework
 - **Sepolia Testnet** - Testinis Ethereum tinklas
 - **Infura** - Ethereum node provider
 - **Etherscan** - Blockchain explorer
 
----
-
-## 📦 Instaliacija ir Paleidimas
+## Instaliacija ir Paleidimas
 
 ### Reikalavimai
 
@@ -326,39 +376,7 @@ npm run dev
 # Atidaryti naršyklėje: http://localhost:5173
 ```
 
----
-
-## 🧪 Testavimas
-
-### Unit Testai
-
-```bash
-# Paleisti visus testus
-npm test
-
-# arba
-truffle test
-
-# Paleisti konkretu testą
-truffle test test/FreelanceEscrow.test.js
-```
-
-### Testavimo Scenarijai
-
-✅ Projekto sukūrimas  
-✅ Etapų pridėjimas  
-✅ Finansavimas ir projekto pradžia  
-✅ Darbo pateikimas  
-✅ Etapo patvirtinimas ir mokėjimas  
-✅ Auto-patvirtinimas po deadline  
-✅ Ginčų kūrimas ir sprendimas  
-✅ Projekto atšaukimas  
-✅ Grąžinimas  
-✅ Access control patikrinimas  
-
----
-
-## 📊 Etherscan Logų Peržiūra
+## Etherscan Logų Peržiūra
 
 Po deployment į Sepolia testnet:
 
@@ -382,36 +400,39 @@ Po deployment į Sepolia testnet:
 - `DisputeResolved` - Ginčas išspręstas
 - `ProjectCompleted` - Projektas baigtas
 
----
+## Front-End Funkcionalumas
 
-## 🎮 Front-End Funkcionalumas
+### Minimum
 
-### Minimumas (Plan Minimum)
+#### Wallet Prijungimas
 
-✅ **Wallet Prijungimas**
 - MetaMask integracija
 - Tinklo pasirinkimas (Ganache/Sepolia)
 - Balance rodymas
 
-✅ **Klientui**
+#### Klientui
+
 - Projekto kūrimas
 - Etapų pridėjimas
 - Projekto finansavimas
 - Etapų patvirtinimas/ginčijimas
 - Projekto būsenos peržiūra
 
-✅ **Freelanceriui**
+#### Freelanceriui
+
 - Projektų sąrašas
 - Darbo pateikimas su hash
 - Mokėjimų istorija
 
-✅ **Arbitrui**
+#### Arbitrui
+
 - Ginčijamų projektų sąrašas
 - Ginčų sprendimas
 
-### Maximum (Papildomai +1 balas)
+### Maximum
 
-🌟 **Pažangios Funkcijos**
+#### Extra Funkcijos
+
 - Dashboard su statistika
 - Real-time notification sistema
 - IPFS integracija failų upload'ui
@@ -425,118 +446,3 @@ Po deployment į Sepolia testnet:
 - Email/Push notifications
 - Profile management
 - Advanced analytics ir charts
-
----
-
-## 📈 Vertinimo Kriterijai
-
-### Privaloma Dalis (iki 3 balų)
-
-✅ Unikalus verslo modelis (ne pavyzdinis)  
-✅ Išsamus verslo modelio aprašymas GitHub  
-✅ Sekų diagrama su aprašymais  
-✅ Išmanioji sutartis Solidity  
-✅ Veikiantis lokalus testavimas  
-✅ Deployment į Sepolia testnet  
-✅ Etherscan logų peržiūra  
-✅ Minimalistinis Front-End  
-
-### Papildoma Dalis (iki +1.5 balo)
-
-🌟 Kokybiškas verslo modelio aprašymas (+0.5)  
-🌟 Pažangus Front-End funkcionalumas (+1.0)  
-
-### Vertinami Aspektai
-
-- **Verslo logikos sudėtingumas** - Kiek šalių, scenarijai
-- **Smart contract kokybė** - Saugumas, optimizacija, komentarai
-- **Testavimo išsamumas** - Unit testai, scenarijai
-- **Front-End funkcionalumas** - UX/UI, features
-- **Dokumentacijos kokybė** - README, komentarai, diagramos
-- **Code style** - Tvarkingumas, best practices
-
----
-
-## 🔐 Saugumo Aspektai
-
-### Įgyvendinti Saugos Mechanizmai
-
-1. **Access Control**
-   - `onlyClient`, `onlyFreelancer`, `onlyArbiter` modifiers
-   - Užtikrina, kad funkcijas kviečia tik įgalioti vartotojai
-
-2. **Reentrancy Protection**
-   - State keičiamas prieš ETH pervedimą
-   - Naudojamas Checks-Effects-Interactions pattern
-
-3. **Input Validation**
-   - Visi adresai tikrinami
-   - Sumos validuojamos (> 0)
-   - Deadline patikrinimas
-
-4. **Status Management**
-   - Griežta projekto būsenų kontrolė
-   - Funkcijos veikia tik teisinguose statusuose
-
-5. **Time-based Protection**
-   - 7 dienų auto-approval apsaugo freelancerius
-   - Deadline patikrinimas projekto kūrime
-
-6. **Event Logging**
-   - Visi kritiniai veiksmai logginami
-   - Užtikrina transparency ir auditability
-
----
-
-## 🤝 Komandos Nariai
-
-- **[Vardas Pavardė]** - Smart Contract Development, Testing
-- **[Vardas Pavardė]** - Front-End Development, UI/UX Design
-
----
-
-## 📝 Licencija
-
-MIT License - Laisvas naudojimas edukaciniais tikslais
-
----
-
-## 📚 Šaltiniai ir Nuorodos
-
-### Dokumentacija
-- [Solidity Docs](https://docs.soliditylang.org/)
-- [Truffle Suite](https://trufflesuite.com/docs/)
-- [Web3.js Docs](https://web3js.readthedocs.io/)
-- [Ethereum.org](https://ethereum.org/en/developers/)
-
-### Tutorialai
-- [CryptoZombies](https://cryptozombies.io/)
-- [Ethereum DApp University](https://www.dappuniversity.com/)
-- [Coursera Blockchain Specialization](https://www.coursera.org/specializations/blockchain)
-
-### Tools
-- [Remix IDE](https://remix.ethereum.org/)
-- [Ganache](https://trufflesuite.com/ganache/)
-- [MetaMask](https://metamask.io/)
-- [Sepolia Faucet](https://sepoliafaucet.com/)
-- [Sepolia Etherscan](https://sepolia.etherscan.io/)
-
----
-
-## 🎯 Išvados
-
-Ši Freelance Escrow sistema demonstruoja, kaip blockchain technologija gali išspręsti realias pasaulio problemas:
-
-1. **Pasitikėjimo trūkumas** - Išmanioji sutartis veikia kaip neutralus tarpininkas
-2. **Mokėjimų saugumas** - Lėšos laikomos escrow iki darbo patvirtinimo
-3. **Ginčų sprendimas** - Decentralizuotas arbitražas
-4. **Automatizacija** - Mokėjimai ir sutarčių vykdymas be žmogiškos intervencijos
-5. **Transparency** - Visi veiksmai matomi blockchain'e
-6. **Immutability** - Negalima pakeisti praeities įrašų
-
-Sistema yra tinkama realiam naudojimui ir gali būti lengvai išplėsta su papildomomis funkcijomis.
-
----
-
-**Projektas parengtas VU Blockchain kurso 4-ajam laboratoriniam darbui**  
-**Data: 2025-12-17**

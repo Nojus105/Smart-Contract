@@ -1,6 +1,29 @@
 # Freelance Escrow DApp - Quick Start Guide
 
-## 🚀 Fastest Way to Get Started (5 minutes)
+- [Freelance Escrow DApp - Quick Start Guide](#freelance-escrow-dapp---quick-start-guide)
+  - [Fastest Way to Get Started (5 minutes)](#fastest-way-to-get-started-5-minutes)
+    - [1. Install Everything](#1-install-everything)
+    - [2. Start Ganache](#2-start-ganache)
+    - [3. Setup Environment](#3-setup-environment)
+    - [4. Compile and Deploy](#4-compile-and-deploy)
+    - [5. Configure Frontend](#5-configure-frontend)
+    - [6. Copy ABI to Frontend](#6-copy-abi-to-frontend)
+    - [7. Setup MetaMask](#7-setup-metamask)
+    - [8. Run the DApp](#8-run-the-dapp)
+    - [9. Test the Application](#9-test-the-application)
+  - [Quick Commands Reference](#quick-commands-reference)
+  - [Project Structure Quick Reference](#project-structure-quick-reference)
+  - [Common Issues and Quick Fixes](#common-issues-and-quick-fixes)
+    - [Issue: "Cannot find module '@truffle/hdwallet-provider'"](#issue-cannot-find-module-trufflehdwallet-provider)
+    - [Issue: "Invalid contract address" in DApp](#issue-invalid-contract-address-in-dapp)
+    - [Issue: "Insufficient funds" error](#issue-insufficient-funds-error)
+    - [Issue: ABI errors in DApp](#issue-abi-errors-in-dapp)
+    - [Issue: Can't connect wallet](#issue-cant-connect-wallet)
+  - [Testing Accounts Setup](#testing-accounts-setup)
+  - [Deploying to Sepolia Testnet](#deploying-to-sepolia-testnet)
+  - [Key Features Implemented](#key-features-implemented)
+
+## Fastest Way to Get Started (5 minutes)
 
 ### 1. Install Everything
 
@@ -14,7 +37,7 @@ cd client && npm install && cd ..
 
 ### 2. Start Ganache
 
-**Download Ganache**: https://trufflesuite.com/ganache/
+**Download Ganache**: <https://trufflesuite.com/ganache/>
 
 - Create new Ethereum workspace
 - Port: 7545
@@ -28,7 +51,8 @@ cp .env.example .env
 ```
 
 Edit `.env` and paste your Ganache mnemonic:
-```
+
+```env
 MNEMONIC="your ganache mnemonic here"
 ```
 
@@ -75,7 +99,7 @@ cd client
 npm run dev
 ```
 
-Open http://localhost:5173
+Open <http://localhost:5173>
 
 ### 9. Test the Application
 
@@ -93,7 +117,7 @@ Open http://localhost:5173
 
 ---
 
-## 📋 Quick Commands Reference
+## Quick Commands Reference
 
 ```bash
 # Compile contracts
@@ -117,9 +141,9 @@ cd client && npm run build
 
 ---
 
-## 🎯 Project Structure Quick Reference
+## Project Structure Quick Reference
 
-```
+```plaintext
 Smart-Contract/
 ├── contracts/                    # Solidity smart contracts
 │   └── FreelanceEscrow.sol      # Main contract
@@ -139,39 +163,49 @@ Smart-Contract/
 
 ---
 
-## 🔥 Common Issues and Quick Fixes
+## Common Issues and Quick Fixes
 
 ### Issue: "Cannot find module '@truffle/hdwallet-provider'"
-**Fix**: 
+
+**Fix**:
+
 ```bash
 npm install
 ```
 
 ### Issue: "Invalid contract address" in DApp
-**Fix**: 
+
+**Fix**:
+
 1. Check you updated `CONTRACT_ADDRESS` in `Web3Context.jsx`
 2. Make sure contract is deployed: `npm run migrate:dev`
 
 ### Issue: "Insufficient funds" error
-**Fix**: 
+
+**Fix**:
+
 - Import Ganache account into MetaMask using private key
 - Make sure you're on Ganache network in MetaMask
 
 ### Issue: ABI errors in DApp
-**Fix**: 
+
+**Fix**:
+
 ```bash
 cp build/contracts/FreelanceEscrow.json client/src/contracts/
 ```
 
 ### Issue: Can't connect wallet
+
 **Fix**:
+
 1. Install MetaMask extension
 2. Add Ganache network to MetaMask
 3. Import account from Ganache
 
 ---
 
-## 📊 Testing Accounts Setup
+## Testing Accounts Setup
 
 For testing, use these Ganache accounts with different roles:
 
@@ -183,11 +217,11 @@ Switch between accounts in MetaMask to test different roles.
 
 ---
 
-## 🌐 Deploying to Sepolia Testnet
+## Deploying to Sepolia Testnet
 
-1. Get Sepolia ETH from faucet: https://sepoliafaucet.com/
+1. Get Sepolia ETH from faucet: <https://sepoliafaucet.com/>
 2. Add your wallet mnemonic to `.env`
-3. Get Infura API key: https://infura.io/
+3. Get Infura API key: <https://infura.io/>
 4. Deploy: `npm run migrate:sepolia`
 5. Verify on Etherscan: `npm run verify`
 
@@ -195,16 +229,18 @@ See [SETUP.md](./SETUP.md) for detailed instructions.
 
 ---
 
-## 📚 Key Features Implemented
+## Key Features Implemented
 
-✅ **Smart Contract**:
+**Smart Contract**:
+
 - Multi-party escrow (Client, Freelancer, Arbiter)
 - Milestone-based payments
 - Dispute resolution mechanism
 - Auto-approval after 7 days
 - 2% arbiter fee
 
-✅ **DApp Features**:
+**DApp Features**:
+
 - MetaMask integration
 - Project creation with multiple milestones
 - Dashboard with statistics
@@ -213,69 +249,3 @@ See [SETUP.md](./SETUP.md) for detailed instructions.
 - Dark/Light theme
 - Responsive design
 - Real-time updates
-
----
-
-## 🎓 For Grading/Presentation
-
-### What to Show:
-
-1. **README.md** - Business model, sequence diagrams
-2. **Smart Contract** - [contracts/FreelanceEscrow.sol](contracts/FreelanceEscrow.sol)
-3. **Local Test** - Working DApp on Ganache
-4. **Sepolia Deployment** - Contract on testnet
-5. **Etherscan** - Verified contract and transactions
-6. **DApp Demo** - Full workflow demonstration
-
-### Key Points to Highlight:
-
-- ✨ Unique business model (not the example one)
-- 🔒 Security features (access control, validation)
-- 💰 Escrow and payment automation
-- ⚖️ Dispute resolution mechanism
-- 🎨 Advanced UI with dark mode, responsive design
-- 📱 Real-time blockchain interaction
-- 🧪 Comprehensive testing
-
----
-
-## 💡 Tips for Maximum Points
-
-- [ ] Test all scenarios thoroughly
-- [ ] Take screenshots of working DApp
-- [ ] Document any issues encountered
-- [ ] Prepare demo script
-- [ ] Have Etherscan transactions ready
-- [ ] Explain security measures
-- [ ] Show sequence diagram understanding
-
----
-
-## 📞 Need Help?
-
-1. Check [README.md](./README.md) for detailed documentation
-2. Check [SETUP.md](./SETUP.md) for step-by-step setup
-3. Review Solidity code comments
-4. Check browser console for errors
-5. Check Ganache logs for transactions
-
----
-
-## 🎉 Success Checklist
-
-- [ ] Ganache running
-- [ ] Contracts compiled
-- [ ] Contracts deployed locally
-- [ ] MetaMask configured
-- [ ] DApp running at localhost:5173
-- [ ] Wallet connected
-- [ ] Can create projects
-- [ ] Can submit milestones
-- [ ] Can approve/dispute
-- [ ] Arbiter can resolve disputes
-- [ ] Deployed to Sepolia (optional for testing)
-- [ ] Contract verified on Etherscan (optional)
-
----
-
-**Good luck with your project! You have everything needed for maximum points (4.5 balai)! 🚀**

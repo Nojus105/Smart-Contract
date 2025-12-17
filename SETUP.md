@@ -1,14 +1,53 @@
 # Setup and Deployment Guide
 
+- [Setup and Deployment Guide](#setup-and-deployment-guide)
+  - [Prerequisites](#prerequisites)
+  - [Step 1: Install Dependencies](#step-1-install-dependencies)
+    - [Backend (Smart Contract)](#backend-smart-contract)
+    - [Frontend (DApp)](#frontend-dapp)
+  - [Step 2: Local Development Setup](#step-2-local-development-setup)
+    - [Option A: Using Ganache GUI](#option-a-using-ganache-gui)
+    - [Option B: Using Ganache CLI](#option-b-using-ganache-cli)
+  - [Step 3: Configure Environment](#step-3-configure-environment)
+    - [Getting Infura API Key](#getting-infura-api-key)
+    - [Getting Etherscan API Key](#getting-etherscan-api-key)
+  - [Step 4: Compile Smart Contracts](#step-4-compile-smart-contracts)
+  - [Step 5: Deploy to Local Network (Ganache)](#step-5-deploy-to-local-network-ganache)
+  - [Step 6: Configure Frontend with Contract Address](#step-6-configure-frontend-with-contract-address)
+  - [Step 7: Copy Contract ABI to Frontend](#step-7-copy-contract-abi-to-frontend)
+  - [Step 8: Configure MetaMask for Local Network](#step-8-configure-metamask-for-local-network)
+  - [Step 9: Run the DApp](#step-9-run-the-dapp)
+  - [Step 10: Test the Application Locally](#step-10-test-the-application-locally)
+  - [Deploying to Sepolia Testnet](#deploying-to-sepolia-testnet)
+    - [Step 1: Get Sepolia ETH](#step-1-get-sepolia-eth)
+    - [Step 2: Update .env with Mainnet Wallet](#step-2-update-env-with-mainnet-wallet)
+    - [Step 3: Deploy to Sepolia](#step-3-deploy-to-sepolia)
+    - [Step 4: Verify Contract on Etherscan](#step-4-verify-contract-on-etherscan)
+    - [Step 5: Update Frontend for Sepolia](#step-5-update-frontend-for-sepolia)
+    - [Step 6: Configure MetaMask for Sepolia](#step-6-configure-metamask-for-sepolia)
+    - [Step 7: Test on Sepolia](#step-7-test-on-sepolia)
+  - [Troubleshooting](#troubleshooting)
+    - ["Error: Insufficient funds"](#error-insufficient-funds)
+    - ["Error: Invalid contract address"](#error-invalid-contract-address)
+    - ["MetaMask - RPC Error: Invalid chainId"](#metamask---rpc-error-invalid-chainid)
+    - ["Transaction failed"](#transaction-failed)
+    - ["Module not found" errors](#module-not-found-errors)
+    - [ABI errors](#abi-errors)
+  - [Testing Smart Contracts](#testing-smart-contracts)
+  - [Building for Production](#building-for-production)
+  - [Viewing on Etherscan](#viewing-on-etherscan)
+  - [Important Security Notes](#important-security-notes)
+  - [Next Steps](#next-steps)
+
 ## Prerequisites
 
 Before you begin, ensure you have installed:
 
-- **Node.js** (v16 or higher): https://nodejs.org/
+- **Node.js** (v16 or higher): <https://nodejs.org/>
 - **npm** (comes with Node.js)
-- **Git**: https://git-scm.com/
-- **MetaMask**: https://metamask.io/ (browser extension)
-- **Ganache** (optional, for local testing): https://trufflesuite.com/ganache/
+- **Git**: <https://git-scm.com/>
+- **MetaMask**: <https://metamask.io/> (browser extension)
+- **Ganache** (optional, for local testing): <https://trufflesuite.com/ganache/>
 
 ## Step 1: Install Dependencies
 
@@ -36,7 +75,7 @@ npm install
 
 ### Option A: Using Ganache GUI
 
-1. Download and install Ganache from https://trufflesuite.com/ganache/
+1. Download and install Ganache from <https://trufflesuite.com/ganache/>
 2. Create a new workspace (Ethereum)
 3. Set RPC Server to `HTTP://127.0.0.1:7545`
 4. Note down the mnemonic phrase for later use
@@ -77,14 +116,14 @@ ETHERSCAN_API_KEY=your_etherscan_api_key_here
 
 ### Getting Infura API Key
 
-1. Go to https://infura.io/
+1. Go to <https://infura.io/>
 2. Sign up for a free account
 3. Create a new project
 4. Copy the API key from project settings
 
 ### Getting Etherscan API Key
 
-1. Go to https://etherscan.io/
+1. Go to <https://etherscan.io/>
 2. Create an account
 3. Go to API-KEYs page
 4. Create a new API key
@@ -116,7 +155,8 @@ truffle migrate --network development
 **Important**: Copy the deployed contract address from the output!
 
 Example output:
-```
+
+```text
 2_deploy_contracts.js
 =====================
 
@@ -189,7 +229,7 @@ The app should open at `http://localhost:5173`
 
 ### Step 1: Get Sepolia ETH
 
-1. Go to https://sepoliafaucet.com/
+1. Go to <https://sepoliafaucet.com/>
 2. Enter your wallet address
 3. Complete the captcha and request test ETH
 4. Wait for confirmation (can take a few minutes)
@@ -199,6 +239,7 @@ The app should open at `http://localhost:5173`
 **WARNING**: Never commit your real mnemonic to Git!
 
 In `.env`:
+
 ```env
 # Use a wallet with Sepolia ETH
 MNEMONIC="your real wallet mnemonic goes here"
@@ -257,27 +298,34 @@ VITE_CONTRACT_ADDRESS=0xYourSepoliaContractAddress
 ## Troubleshooting
 
 ### "Error: Insufficient funds"
+
 - Make sure your wallet has enough ETH (for local: import Ganache account, for Sepolia: get from faucet)
 
 ### "Error: Invalid contract address"
+
 - Verify you copied the correct contract address to `Web3Context.jsx`
 - Make sure the contract is deployed on the network you're connected to
 
 ### "MetaMask - RPC Error: Invalid chainId"
+
 - Reset MetaMask account: Settings → Advanced → Reset Account
 - Make sure Ganache/Sepolia network is properly configured
 
 ### "Transaction failed"
+
 - Check that you're calling functions from the correct account
 - Verify you have enough ETH for gas fees
 - Check contract events in console for error messages
 
 ### "Module not found" errors
+
 - Delete `node_modules` and `package-lock.json`
 - Run `npm install` again
 
 ### ABI errors
+
 - Make sure you copied the ABI file correctly:
+
   ```bash
   cp build/contracts/FreelanceEscrow.json client/src/contracts/
   ```
@@ -314,9 +362,10 @@ npm run build
 ```
 
 Deploy the `dist` folder to:
-- Vercel: https://vercel.com/
-- Netlify: https://www.netlify.com/
-- GitHub Pages: https://pages.github.com/
+
+- Vercel: <https://vercel.com/>
+- Netlify: <https://www.netlify.com/>
+- GitHub Pages: <https://pages.github.com/>
 
 ---
 
@@ -324,7 +373,7 @@ Deploy the `dist` folder to:
 
 After deploying to Sepolia:
 
-1. Go to https://sepolia.etherscan.io/
+1. Go to <https://sepolia.etherscan.io/>
 2. Enter your contract address in the search
 3. View:
    - **Transactions**: All contract interactions
@@ -337,23 +386,21 @@ After deploying to Sepolia:
 
 ## Important Security Notes
 
-- ❌ **NEVER** commit `.env` file to Git
-- ❌ **NEVER** share your mnemonic/private keys
-- ❌ **NEVER** use testnet wallets with mainnet funds
-- ✅ **ALWAYS** use separate wallets for testing
-- ✅ **ALWAYS** verify contract code before deployment
-- ✅ **ALWAYS** test thoroughly on testnet first
+- **NEVER** commit `.env` file to Git
+- **NEVER** share your mnemonic/private keys
+- **NEVER** use testnet wallets with mainnet funds
+- **ALWAYS** use separate wallets for testing
+- **ALWAYS** verify contract code before deployment
+- **ALWAYS** test thoroughly on testnet first
 
 ---
 
 ## Next Steps
 
-1. ✅ Complete local testing
-2. ✅ Deploy to Sepolia testnet
-3. ✅ Verify contract on Etherscan
-4. ✅ Test all functionality on testnet
-5. ✅ Document all contract addresses
-6. ✅ Take screenshots for documentation
-7. ✅ Prepare presentation/report
-
-Good luck with your project! 🚀
+1. Complete local testing
+2. Deploy to Sepolia testnet
+3. Verify contract on Etherscan
+4. Test all functionality on testnet
+5. Document all contract addresses
+6. Take screenshots for documentation
+7. Prepare presentation/report
