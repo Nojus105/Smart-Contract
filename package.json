@@ -1,0 +1,36 @@
+{
+  "name": "freelance-escrow-dapp",
+  "version": "1.0.0",
+  "description": "Decentralized Freelance Escrow System with Smart Contracts",
+  "main": "truffle-config.js",
+  "scripts": {
+    "dev": "cd client && npm run dev",
+    "build": "cd client && npm run build",
+    "compile": "truffle compile",
+    "migrate:dev": "truffle migrate --network development",
+    "migrate:sepolia": "truffle migrate --network sepolia",
+    "test": "truffle test",
+    "console": "truffle console",
+    "verify": "truffle run verify FreelanceEscrow --network sepolia"
+  },
+  "keywords": [
+    "ethereum",
+    "blockchain",
+    "smart-contract",
+    "freelance",
+    "escrow",
+    "dapp",
+    "solidity",
+    "web3"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "dependencies": {
+    "@truffle/hdwallet-provider": "^2.1.15",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "truffle": "^5.11.5",
+    "truffle-plugin-verify": "^0.6.7"
+  }
+}
