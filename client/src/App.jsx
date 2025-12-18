@@ -4,8 +4,13 @@ import { Web3Provider, useWeb3 } from './context/Web3Context'
 const statusText = ['Created', 'In progress', 'Completed', 'Disputed', 'Cancelled', 'Refunded']
 const milestoneText = ['Pending', 'Submitted', 'Approved', 'Disputed', 'Paid']
 
-const ActionButton = ({ onClick, children, disabled }) => (
-  <button className="btn" onClick={onClick} disabled={disabled}>
+const ActionButton = ({ onClick, children, disabled, variant = 'primary', size = 'md', type }) => (
+  <button
+    className={`btn btn-${variant} btn-${size}`}
+    onClick={onClick}
+    disabled={disabled}
+    type={type}
+  >
     {children}
   </button>
 )
@@ -163,108 +168,160 @@ const Dashboard = () => {
 
   return (
     <div className="layout">
-      <header className="bar">
-        <div>
-          <h1>Freelance Escrow</h1>
-          <p className="muted">Minimal dApp for milestone escrow with an arbiter.</p>
+      <header className="topbar">
+        <div className="brand">
+          <div className="brand-mark" aria-hidden="true" />
+          <div>
+            <h1>Freelance Escrow</h1>
+            <p className="muted">Milestone escrow with an arbiter (2% fee).</p>
+          </div>
         </div>
-        <div className="stack-right">
+
+        <div className="topbar-actions">
           {isConnected ? (
             <>
-              <span className="pill">{balance} ETH</span>
-              <span className="pill">{account.slice(0, 6)}...{account.slice(-4)}</span>
-              <ActionButton onClick={disconnectWallet}>Disconnect</ActionButton>
+              <span className="badge">{Number(balance).toFixed(4)} ETH</span>
+              <span className="badge mono">{account.slice(0, 6)}...{account.slice(-4)}</span>
+              <ActionButton onClick={disconnectWallet} variant="secondary" size="sm">
+                Disconnect
+              </ActionButton>
             </>
           ) : (
-            <ActionButton onClick={connectWallet} disabled={loading}>
-              Connect wallet
+            <ActionButton onClick={connectWallet} disabled={loading} variant="primary" size="sm">
+              {loading ? 'Loading…' : 'Connect wallet'}
             </ActionButton>
           )}
         </div>
       </header>
 
-      {note && <div className="note">{note}</div>}
+      {note && (
+        <div className="note" role="status" aria-live="polite">
+          {note}
+        </div>
+      )}
 
       <section className="card">
-        <div className="flex between">
-          <h2>Create & fund project</h2>
-          {busy && <span className="pill">Working...</span>}
+        <div className="card-head">
+          <div>
+            <h2>Create & fund project</h2>
+            <p className="muted small">Creates the project, adds milestones, then funds + starts it.</p>
+          </div>
+          <div className="card-head-actions">
+            {busy && <span className="badge">Working…</span>}
+          </div>
         </div>
-        <form className="grid" onSubmit={createProject}>
-          <label>
-            Freelancer address
-            <input
-              value={form.freelancer}
-              onChange={(e) => setForm({ ...form, freelancer: e.target.value })}
-              placeholder="0x..."
-              required
-            />
-          </label>
-          <label>
-            Arbiter address (gets 2%)
-            <input
-              value={form.arbiter}
-              onChange={(e) => setForm({ ...form, arbiter: e.target.value })}
-              placeholder="0x..."
-              required
-            />
-          </label>
-          <label>
-            Short description
-            <input
-              value={form.description}
-              onChange={(e) => setForm({ ...form, description: e.target.value })}
-              placeholder="Website build"
-              required
-            />
-          </label>
-          <label>
-            Deadline
-            <input
-              type="datetime-local"
-              value={form.deadline}
-              onChange={(e) => setForm({ ...form, deadline: e.target.value })}
-              required
-            />
-          </label>
-          <label>
-            Milestones (one per line, amount:description)
-            <textarea
-              rows="3"
-              value={milestonesTextValue}
-              onChange={(e) => setMilestonesTextValue(e.target.value)}
-            />
-          </label>
-          <ActionButton disabled={!isConnected || busy}>Create project</ActionButton>
+
+        <form className="form" onSubmit={createProject}>
+          <div className="form-grid">
+            <label className="field">
+              <span>Freelancer address</span>
+              <input
+                value={form.freelancer}
+                onChange={(e) => setForm({ ...form, freelancer: e.target.value })}
+                placeholder="0x..."
+                required
+              />
+            </label>
+            <label className="field">
+              <span>Arbiter address</span>
+              <input
+                value={form.arbiter}
+                onChange={(e) => setForm({ ...form, arbiter: e.target.value })}
+                placeholder="0x..."
+                required
+              />
+              <span className="help">Arbiter receives a 2% fee on funding.</span>
+            </label>
+            <label className="field">
+              <span>Short description</span>
+              <input
+                value={form.description}
+                onChange={(e) => setForm({ ...form, description: e.target.value })}
+                placeholder="Website build"
+                required
+              />
+            </label>
+            <label className="field">
+              <span>Deadline</span>
+              <input
+                type="datetime-local"
+                value={form.deadline}
+                onChange={(e) => setForm({ ...form, deadline: e.target.value })}
+                required
+              />
+            </label>
+            <label className="field field-full">
+              <span>Milestones</span>
+              <textarea
+                rows="4"
+                value={milestonesTextValue}
+                onChange={(e) => setMilestonesTextValue(e.target.value)}
+              />
+              <span className="help">One per line: <span className="mono">amount:description</span> (amount in ETH)</span>
+            </label>
+          </div>
+
+          <div className="form-actions">
+            <ActionButton type="submit" disabled={!isConnected || busy} variant="primary">
+              Create project
+            </ActionButton>
+            <ActionButton
+              onClick={(e) => {
+                e.preventDefault()
+                setForm({ freelancer: '', arbiter: '', description: '', deadline: '' })
+                setMilestonesTextValue('0.1:Design draft\n0.2:Final delivery')
+                show('')
+              }}
+              disabled={busy}
+              variant="ghost"
+            >
+              Reset
+            </ActionButton>
+          </div>
         </form>
       </section>
 
       <section className="card">
-        <div className="flex between">
-          <h2>Your projects</h2>
-          <ActionButton onClick={loadProjects} disabled={!isConnected || busy}>
-            Refresh
-          </ActionButton>
+        <div className="card-head">
+          <div>
+            <h2>Your projects</h2>
+            <p className="muted small">Shows projects where you are client, freelancer, or arbiter.</p>
+          </div>
+          <div className="card-head-actions">
+            <ActionButton onClick={loadProjects} disabled={!isConnected || busy} variant="secondary" size="sm">
+              Refresh
+            </ActionButton>
+          </div>
         </div>
         {!projects.length && <p className="muted">Nothing yet. Create or join a project.</p>}
 
         <div className="stack">
           {projects.map((p) => (
             <div key={p.id} className="panel">
-              <div className="flex between">
-                <div>
-                  <strong>Project #{p.id}</strong>
-                  <div className="muted">{p.projectDescription}</div>
-                  <div className="muted">
-                    Client {p.client.slice(0, 6)}... | Freelancer {p.freelancer.slice(0, 6)}... | Arbiter
-                    {p.arbiter.slice(0, 6)}...
+              <div className="panel-head">
+                <div className="panel-title">
+                  <div className="panel-kicker">Project #{p.id}</div>
+                  <div className="panel-desc">{p.projectDescription}</div>
+                  <div className="panel-meta">
+                    <span className="mono">Client {p.client.slice(0, 6)}…</span>
+                    <span className="dot" aria-hidden="true" />
+                    <span className="mono">Freelancer {p.freelancer.slice(0, 6)}…</span>
+                    <span className="dot" aria-hidden="true" />
+                    <span className="mono">Arbiter {p.arbiter.slice(0, 6)}…</span>
                   </div>
                 </div>
-                <span className="pill">{statusText[Number(p.status)]}</span>
+                <span className="badge">{statusText[Number(p.status)]}</span>
               </div>
 
-              <div className="muted small">
-                Total {ethToNumber(p.totalAmount).toFixed(4)} ETH | Paid {ethToNumber(p.paidAmount).toFixed(4)} ETH
+              <div className="panel-stats">
+                <div className="stat">
+                  <div className="stat-label">Total</div>
+                  <div className="stat-value">{ethToNumber(p.totalAmount).toFixed(4)} ETH</div>
+                </div>
+                <div className="stat">
+                  <div className="stat-label">Paid</div>
+                  <div className="stat-value">{ethToNumber(p.paidAmount).toFixed(4)} ETH</div>
+                </div>
               </div>
 
               <div className="stack">
@@ -280,26 +337,50 @@ const Dashboard = () => {
                   const canResolve = isArbiter && ms === 3 && projectStatus === 3
                   return (
                     <div key={m.index} className="milestone">
-                      <div className="flex between">
+                      <div className="milestone-head">
                         <div>
-                          <div className="strong">{m.description}</div>
-                          <div className="muted small">
-                            {ethToNumber(m.amount).toFixed(4)} ETH · {milestoneText[ms]}
+                          <div className="milestone-title">{m.description}</div>
+                          <div className="milestone-sub">
+                            <span className="mono">{ethToNumber(m.amount).toFixed(4)} ETH</span>
+                            <span className="dot" aria-hidden="true" />
+                            <span>{milestoneText[ms]}</span>
                           </div>
-                          {m.deliverableHash && <div className="muted small">Proof: {m.deliverableHash}</div>}
+                          {m.deliverableHash && (
+                            <div className="milestone-proof">Proof: <span className="mono">{m.deliverableHash}</span></div>
+                          )}
                         </div>
-                        <span className="pill secondary">#{m.index + 1}</span>
+                        <span className="badge badge-soft">#{m.index + 1}</span>
                       </div>
                       <div className="actions">
-                        {canSubmit && <ActionButton onClick={() => submitWork(p.id, m.index)}>Submit work</ActionButton>}
-                        {canApprove && <ActionButton onClick={() => approveWork(p.id, m.index)}>Approve & pay</ActionButton>}
-                        {canDispute && <ActionButton onClick={() => disputeWork(p.id, m.index)}>Dispute</ActionButton>}
+                        {canSubmit && (
+                          <ActionButton onClick={() => submitWork(p.id, m.index)} variant="primary" size="sm">
+                            Submit work
+                          </ActionButton>
+                        )}
+                        {canApprove && (
+                          <ActionButton onClick={() => approveWork(p.id, m.index)} variant="primary" size="sm">
+                            Approve & pay
+                          </ActionButton>
+                        )}
+                        {canDispute && (
+                          <ActionButton onClick={() => disputeWork(p.id, m.index)} variant="danger" size="sm">
+                            Dispute
+                          </ActionButton>
+                        )}
                         {canResolve && (
                           <>
-                            <ActionButton onClick={() => resolveDispute(p.id, m.index, true)}>
+                            <ActionButton
+                              onClick={() => resolveDispute(p.id, m.index, true)}
+                              variant="primary"
+                              size="sm"
+                            >
                               Approve freelancer
                             </ActionButton>
-                            <ActionButton onClick={() => resolveDispute(p.id, m.index, false)}>
+                            <ActionButton
+                              onClick={() => resolveDispute(p.id, m.index, false)}
+                              variant="warning"
+                              size="sm"
+                            >
                               Refund client
                             </ActionButton>
                           </>
