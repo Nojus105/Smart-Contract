@@ -260,12 +260,12 @@ Smart-Contract/
 
 ### Smart Contract
 
-- **Solidity 0.8.19** - Išmaniosios sutarties kalba
+- **Solidity** - Išmaniosios sutarties kalba
 - **Truffle** - Development framework
 - **Ganache** - Lokalus Ethereum tinklas
 
 ### Front-End
-
+  
 - **React 18** - UI framework
 - **Vite** - Build tool
 - **Web3.js** - Ethereum sąsaja
@@ -399,11 +399,3 @@ Po deployment į Sepolia testnet:
 
 - Ginčijamų projektų sąrašas
 - Ginčų sprendimas
-- Rating sistema
-- Multi-language support (LT/EN)
-- Dark/Light theme
-- Mobile responsive design
-- Transaction istorijos eksportavimas
-- Email/Push notifications
-- Profile management
-- Advanced analytics ir charts

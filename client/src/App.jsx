@@ -82,7 +82,6 @@ const Dashboard = () => {
       return show('Invalid freelancer or arbiter address')
     }
 
-
     setBusy(true)
     try {
       const created = await contract.methods
@@ -240,7 +239,7 @@ const Dashboard = () => {
                 required
               />
             </label>
-
+            {/* Deadline removed */}
             <label className="field field-full">
               <span>Milestones</span>
               <textarea
