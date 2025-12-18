@@ -1,10 +1,10 @@
-# Freelance Escrow DApp - Išmanioji Sutartis su Decentralizuota Aplikacija
+# Blockchain Lab 3 - Freelance Escrow
 
 ## Projekto Aprašymas
 
 Šis projektas yra decentralizuota freelance escrow (garantinio depozito) sistema, sukurta Ethereum blockchain platformoje. Sistema leidžia klientams ir freelanceriams saugiai bendradarbiauti, užtikrinant skaidrumą, patikimumą ir apsaugą abiem šalims per išmaniąsias sutartis.
 
-- [Freelance Escrow DApp - Išmanioji Sutartis su Decentralizuota Aplikacija](#freelance-escrow-dapp---išmanioji-sutartis-su-decentralizuota-aplikacija)
+- [Blockchain Lab 3 - Freelance Escrow](#blockchain-lab-3---freelance-escrow)
   - [Projekto Aprašymas](#projekto-aprašymas)
   - [Greitas paleidimas](#greitas-paleidimas)
   - [Verslo Modelis](#verslo-modelis)
