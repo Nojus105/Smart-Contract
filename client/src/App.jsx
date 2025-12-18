@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Web3Provider, useWeb3 } from './context/Web3Context'
 
+// UI labels mirror the Solidity enums (ProjectStatus and MilestoneStatus)
 const statusText = ['Created', 'In progress', 'Completed', 'Disputed', 'Cancelled', 'Refunded']
 const milestoneText = ['Pending', 'Submitted', 'Approved', 'Disputed', 'Paid']
 
@@ -17,19 +18,26 @@ const ActionButton = ({ onClick, children, disabled, variant = 'primary', size =
 
 const Dashboard = () => {
   const { account, balance, connectWallet, disconnectWallet, contract, web3, isConnected, loading } = useWeb3()
+  // Form fields for creating a new project
   const [form, setForm] = useState({ freelancer: '', arbiter: '', description: '' })
+  // Multiline textarea input encoded as amount:description per line
   const [milestonesTextValue, setMilestonesTextValue] = useState('0.1:Design draft\n0.2:Final delivery')
+  // Locally cached projects involving the connected account
   const [projects, setProjects] = useState([])
+  // When true, buttons show a working state to avoid duplicate sends
   const [busy, setBusy] = useState(false)
+  // Surface friendly status or error messages to the user
   const [note, setNote] = useState('')
 
   useEffect(() => {
+    // Refresh projects whenever wallet or contract becomes ready
     if (contract && account) loadProjects()
   }, [contract, account])
 
   const show = (msg) => setNote(msg || '')
 
   const parseMilestones = () =>
+    // Turn textarea lines into validated milestone objects (ignores blanks/invalid rows)
     milestonesTextValue
       .split('\n')
       .map((line) => line.trim())
@@ -49,6 +57,7 @@ const Dashboard = () => {
     if (!contract || !account) return
     setBusy(true)
     try {
+      // Query total projects on-chain then filter to ones that involve the user
       const count = await contract.methods.projectCounter().call()
       const list = []
       for (let i = 0; i < Number(count); i++) {
@@ -60,9 +69,11 @@ const Dashboard = () => {
         const mCount = Number(p.milestoneCount)
         const milestones = []
         for (let j = 0; j < mCount; j++) {
+          // Pull each milestone to show per-milestone actions
           const m = await contract.methods.getMilestone(i, j).call()
           milestones.push({ index: j, ...m })
         }
+        // Newest project displayed first
         list.unshift({ id: i, ...p, milestones })
       }
       setProjects(list)
@@ -85,21 +96,25 @@ const Dashboard = () => {
     setBusy(true)
     try {
       const deadline = Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60
+      // Contract createProject currently accepts (freelancer, arbiter, description); the extra deadline arg will revert until the ABI is updated
       const created = await contract.methods
         .createProject(form.freelancer, form.arbiter, form.description || 'Project', deadline)
         .send({ from: account })
       const projectId = created.events.ProjectCreated.returnValues.projectId
 
+      // Add milestones on-chain before funding so totalAmount is correct
       for (const m of ms) {
         const wei = web3.utils.toWei(m.amount.toString(), 'ether')
         await contract.methods.addMilestone(projectId, m.description, wei).send({ from: account })
       }
 
+      // Compute full escrow value plus arbiter fee (2%)
       const totalWei = ms
         .map((m) => web3.utils.toWei(m.amount.toString(), 'ether'))
         .reduce((sum, val) => sum + BigInt(val), 0n)
       const fee = (totalWei * 2n) / 100n
 
+      // Fund and start the project in a single transaction
       await contract.methods.startProject(projectId).send({
         from: account,
         value: (totalWei + fee).toString(),
@@ -119,6 +134,7 @@ const Dashboard = () => {
     if (!proof) return
     setBusy(true)
     try {
+      // Freelancer submits evidence for the milestone deliverable
       await contract.methods.submitMilestone(pid, midx, proof).send({ from: account })
       loadProjects()
     } catch (err) {
@@ -131,6 +147,7 @@ const Dashboard = () => {
   const approveWork = async (pid, midx) => {
     setBusy(true)
     try {
+      // Client releases payment to freelancer for this milestone
       await contract.methods.approveMilestone(pid, midx).send({ from: account })
       loadProjects()
     } catch (err) {
@@ -144,6 +161,7 @@ const Dashboard = () => {
     if (!window.confirm('Start a dispute?')) return
     setBusy(true)
     try {
+      // Client moves milestone into Disputed, pausing payouts until arbiter steps in
       await contract.methods.disputeMilestone(pid, midx).send({ from: account })
       loadProjects()
     } catch (err) {
@@ -156,6 +174,7 @@ const Dashboard = () => {
   const resolveDispute = async (pid, midx, approve) => {
     setBusy(true)
     try {
+      // Arbiter decision: approve pays freelancer, reject reopens milestone
       await contract.methods.resolveDispute(pid, midx, approve).send({ from: account })
       loadProjects()
     } catch (err) {

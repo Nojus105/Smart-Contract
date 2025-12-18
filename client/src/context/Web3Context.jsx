@@ -13,6 +13,7 @@ export const useWeb3 = () => {
 const resolveContractAddress = (networkId) => {
   const envAddr = import.meta?.env?.VITE_CONTRACT_ADDRESS
   if (envAddr) return envAddr
+  // Fall back to the artifact network map when no explicit address is provided
   const fromArtifact = FreelanceEscrowABI?.networks?.[String(networkId)]?.address
   return fromArtifact || ''
 }
@@ -32,10 +33,12 @@ export const Web3Provider = ({ children }) => {
       setLoading(false)
       return
     }
+    // Instantiate Web3 against the injected provider (MetaMask or similar)
     const instance = new Web3(window.ethereum)
     setWeb3(instance)
 
     const init = async () => {
+      // Resolve network + contract address before binding the contract
       const id = await instance.eth.net.getId()
       const addr = resolveContractAddress(id)
       if (!addr) {
@@ -53,11 +56,13 @@ export const Web3Provider = ({ children }) => {
       setNetworkId(String(id))
       console.log('Web3 init', { networkId: String(id), contractAddress: addr })
       const accs = await instance.eth.getAccounts()
+      // Auto-connect if the wallet is already authorized
       await handleAccountsChanged(accs, addr)
       setLoading(false)
     }
 
     const handleAccountsChanged = async (accs, resolvedAddr) => {
+      // Whenever the wallet changes accounts, refresh identity and balances
       const next = accs[0]
       if (!next) {
         setAccount('')
@@ -83,6 +88,7 @@ export const Web3Provider = ({ children }) => {
 
     const accountsChangedListener = (accs) => handleAccountsChanged(accs, contractAddressRef.current)
     window.ethereum.on('accountsChanged', accountsChangedListener)
+    // Reload the page on network switch to ensure ABI/address stay in sync
     window.ethereum.on('chainChanged', () => window.location.reload())
 
     return () => {
@@ -94,6 +100,7 @@ export const Web3Provider = ({ children }) => {
     if (!window.ethereum) return
     const accs = await window.ethereum.request({ method: 'eth_requestAccounts' })
     if (accs?.length) {
+      // Build a Web3 instance for this session if one is not already set
       const instance = web3 || new Web3(window.ethereum)
       const id = await instance.eth.net.getId()
       setNetworkId(String(id))
@@ -108,6 +115,7 @@ export const Web3Provider = ({ children }) => {
         return
       }
       const wei = await instance.eth.getBalance(accs[0])
+      // Prime in-memory state to avoid extra round-trips after connect
       setAccount(accs[0])
       setBalance(instance.utils.fromWei(wei, 'ether'))
       setContract(new instance.eth.Contract(FreelanceEscrowABI.abi, addr))
@@ -116,6 +124,7 @@ export const Web3Provider = ({ children }) => {
   }
 
   const disconnectWallet = () => {
+    // Clear ephemeral state; provider still keeps user authorization
     setAccount('')
     setBalance('0')
     setContract(null)

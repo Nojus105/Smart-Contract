@@ -6,6 +6,7 @@ contract Migrations {
   uint public last_completed_migration;
 
   modifier restricted() {
+    // Gate admin-only functions to the deployment account
     require(
       msg.sender == owner,
       "This function is restricted to the contract's owner"
@@ -14,6 +15,7 @@ contract Migrations {
   }
 
   function setCompleted(uint completed) public restricted {
+    // Track the latest migration step so Truffle can resume in order
     last_completed_migration = completed;
   }
 }

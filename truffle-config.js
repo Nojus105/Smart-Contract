@@ -14,6 +14,7 @@ module.exports = {
     
     // Sepolia testnet configuration
     sepolia: {
+      // HDWalletProvider signs txs from mnemonic and routes through Infura
       provider: () => new HDWalletProvider(
         process.env.MNEMONIC,
         `https://sepolia.infura.io/v3/${process.env.INFURA_API_KEY}`
@@ -34,7 +35,7 @@ module.exports = {
       settings: {
         optimizer: {
           enabled: true,
-          runs: 200
+          runs: 200 // Keep bytecode small enough for Sepolia while preserving efficiency
         }
       }
     }
