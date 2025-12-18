@@ -4,6 +4,36 @@
 
 Šis projektas yra decentralizuota freelance escrow (garantinio depozito) sistema, sukurta Ethereum blockchain platformoje. Sistema leidžia klientams ir freelanceriams saugiai bendradarbiauti, užtikrinant skaidrumą, patikimumą ir apsaugą abiem šalims per išmaniąsias sutartis.
 
+## Greitas paleidimas
+
+Svarbu: `compile` / `migrate:*` skriptai yra projekto šaknyje, o `client/` turi tik UI (`vite`) skriptus.
+
+```bash
+# 1) Įdiegti priklausomybes (šaknyje)
+cd Smart-Contract
+npm install
+
+# 2) Įdiegti UI priklausomybes
+cd client
+npm install
+cd ..
+
+# 3) Kompiliuoti sutartį
+npm run compile
+
+# 4) Deploy į lokalų Ganache (GUI arba CLI turi veikti ant 127.0.0.1:7545)
+npm run migrate:dev
+
+# 5) UI paleidimas
+npm run dev
+```
+
+Sepolia deployment (šaknyje):
+
+```bash
+npm run migrate:sepolia
+```
+
 - [Freelance Escrow DApp - Išmanioji Sutartis su Decentralizuota Aplikacija](#freelance-escrow-dapp---išmanioji-sutartis-su-decentralizuota-aplikacija)
   - [Projekto Aprašymas](#projekto-aprašymas)
     - [Tikslas](#tikslas)
@@ -42,12 +72,10 @@
   - [Etherscan Logų Peržiūra](#etherscan-logų-peržiūra)
     - [Svarbūs Event'ai](#svarbūs-eventai)
   - [Front-End Funkcionalumas](#front-end-funkcionalumas)
-    - [Minimum](#minimum)
       - [Wallet Prijungimas](#wallet-prijungimas)
       - [Klientui](#klientui)
       - [Freelanceriui](#freelanceriui)
       - [Arbitrui](#arbitrui)
-    - [Maximum](#maximum)
       - [Extra Funkcijos](#extra-funkcijos)
 
 ### Tikslas
@@ -259,12 +287,12 @@ Smart-Contract/
 │   ├── 1_initial_migration.js    # Pradinis migration
 │   └── 2_deploy_contracts.js     # FreelanceEscrow deployment
 ├── client/                       # Front-End DApp (React)
-│   ├── public/
 │   ├── src/
-│   │   ├── components/          # React komponentai
+│   │   ├── context/             # Web3 context
 │   │   ├── contracts/           # ABI failai
-│   │   ├── utils/               # Web3 utilities
-│   │   └── App.jsx              # Pagrindinis komponentas
+│   │   ├── App.jsx              # Pagrindinis komponentas
+│   │   ├── main.jsx
+│   │   └── index.css
 │   └── package.json
 ├── test/                        # Unit testai
 ├── truffle-config.js            # Truffle konfigūracija
@@ -277,7 +305,6 @@ Smart-Contract/
 ### Smart Contract
 
 - **Solidity 0.8.19** - Išmaniosios sutarties kalba
-- **OpenZeppelin** - Saugūs library'ai
 - **Truffle** - Development framework
 - **Ganache** - Lokalus Ethereum tinklas
 
@@ -285,8 +312,7 @@ Smart-Contract/
 
 - **React 18** - UI framework
 - **Vite** - Build tool
-- **Web3.js / Ethers.js** - Ethereum sąsaja
-- **TailwindCSS** - Styling
+- **Web3.js** - Ethereum sąsaja
 - **MetaMask** - Wallet integration
 
 ### Testing & Deployment
@@ -316,13 +342,9 @@ cd Smart-Contract
 # Įdiegti priklausomybes
 npm install
 
-# Sukurti .env failą iš pavyzdžio
-cp .env.example .env
-
-# Redaguoti .env failą ir įrašyti:
-# - Savo wallet mnemonic
-# - Infura API key
-# - Etherscan API key
+# (Tik Sepolia) sukurti .env failą ir įrašyti:
+# MNEMONIC="..."
+# INFURA_API_KEY=...
 ```
 
 ### 2. Kompiliavimas
@@ -338,8 +360,8 @@ truffle compile
 ### 3. Lokalus Testavimas
 
 ```bash
-# Paleisti Ganache (kitame terminale arba GUI)
-ganache-cli
+# Paleisti Ganache (GUI arba CLI) ant 7545 porto
+# (pvz. Ganache GUI: Quickstart → port 7545)
 
 # Deplointi į lokalų tinklą
 npm run migrate:dev
@@ -356,9 +378,6 @@ truffle migrate --network development
 
 # Deplointi į Sepolia
 npm run migrate:sepolia
-
-# Verifikuoti sutartį Etherscan
-npm run verify
 ```
 
 ### 5. Front-End Paleidimas
@@ -402,8 +421,6 @@ Po deployment į Sepolia testnet:
 
 ## Front-End Funkcionalumas
 
-### Minimum
-
 #### Wallet Prijungimas
 
 - MetaMask integracija
@@ -428,16 +445,6 @@ Po deployment į Sepolia testnet:
 
 - Ginčijamų projektų sąrašas
 - Ginčų sprendimas
-
-### Maximum
-
-#### Extra Funkcijos
-
-- Dashboard su statistika
-- Real-time notification sistema
-- IPFS integracija failų upload'ui
-- Projekto search ir filtravimas
-- Chat funkcionalumas tarp šalių
 - Rating sistema
 - Multi-language support (LT/EN)
 - Dark/Light theme
