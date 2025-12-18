@@ -1,8 +1,19 @@
 const HDWalletProvider = require('@truffle/hdwallet-provider');
+const ganache = require('ganache');
 require('dotenv').config();
+
+const ganacheProvider = ganache.provider({
+  logging: { quiet: true },
+  chain: { chainId: 1337, networkId: 1337 }
+});
 
 module.exports = {
   networks: {
+    // In-memory chain for `truffle test`
+    test: {
+      provider: () => ganacheProvider,
+      network_id: 1337
+    },
     // Local development network (Ganache)
     development: {
       host: "127.0.0.1",
@@ -43,13 +54,5 @@ module.exports = {
   // Truffle DB settings (optional)
   db: {
     enabled: false
-  },
-
-  // Plugins
-  plugins: ["truffle-plugin-verify"],
-
-  // API keys for verification
-  api_keys: {
-    etherscan: process.env.ETHERSCAN_API_KEY
   }
 };

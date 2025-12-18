@@ -1,26 +1,33 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.19;
 
-/**
- * @title FreelanceEscrow
- * @dev Smart contract for managing freelance work payments with milestone-based releases
- * @notice This contract handles escrow payments between clients and freelancers with arbiter dispute resolution
- */
 contract FreelanceEscrow {
-    
-    // Enums
-    enum ProjectStatus { Created, InProgress, Completed, Disputed, Cancelled, Refunded }
-    enum MilestoneStatus { Pending, Submitted, Approved, Disputed, Paid }
-    
-    // Structs
+    enum ProjectStatus {
+        Created,
+        InProgress,
+        Completed,
+        Disputed,
+        Cancelled,
+        Refunded
+    }
+    enum MilestoneStatus {
+        Pending,
+        Submitted,
+        Approved,
+        Disputed,
+        Paid
+    }
+
+    uint256 public constant ARBITER_FEE_PERCENTAGE = 2;
+
     struct Milestone {
         string description;
         uint256 amount;
         MilestoneStatus status;
         uint256 submittedTime;
-        string deliverableHash; // IPFS hash or proof of work
+        string deliverableHash;
     }
-    
+
     struct Project {
         address payable client;
         address payable freelancer;
@@ -28,450 +35,175 @@ contract FreelanceEscrow {
         string projectDescription;
         uint256 totalAmount;
         uint256 arbiterFee;
-        uint256 createdAt;
-        uint256 deadline;
         ProjectStatus status;
-        Milestone[] milestones;
         uint256 paidAmount;
         bool arbiterPaid;
+        Milestone[] milestones;
     }
-    
-    // State variables
+
     mapping(uint256 => Project) public projects;
     uint256 public projectCounter;
-    uint256 public constant ARBITER_FEE_PERCENTAGE = 2; // 2% arbiter fee
-    uint256 public constant APPROVAL_DEADLINE = 7 days; // Auto-approve after 7 days
-    
-    // Events
-    event ProjectCreated(
-        uint256 indexed projectId,
-        address indexed client,
-        address indexed freelancer,
-        uint256 totalAmount
-    );
-    
-    event MilestoneAdded(
-        uint256 indexed projectId,
-        uint256 milestoneIndex,
-        uint256 amount
-    );
-    
+
+    event ProjectCreated(uint256 indexed projectId, address indexed client, address indexed freelancer);
+    event MilestoneAdded(uint256 indexed projectId, uint256 milestoneIndex, uint256 amount);
     event ProjectStarted(uint256 indexed projectId);
-    
-    event MilestoneSubmitted(
-        uint256 indexed projectId,
-        uint256 milestoneIndex,
-        string deliverableHash
-    );
-    
-    event MilestoneApproved(
-        uint256 indexed projectId,
-        uint256 milestoneIndex,
-        uint256 amount
-    );
-    
-    event MilestoneDisputed(
-        uint256 indexed projectId,
-        uint256 milestoneIndex
-    );
-    
-    event DisputeResolved(
-        uint256 indexed projectId,
-        uint256 milestoneIndex,
-        bool approvedByArbiter
-    );
-    
+    event MilestoneSubmitted(uint256 indexed projectId, uint256 milestoneIndex, string deliverableHash);
+    event MilestoneApproved(uint256 indexed projectId, uint256 milestoneIndex, uint256 amount);
+    event MilestoneDisputed(uint256 indexed projectId, uint256 milestoneIndex);
+    event DisputeResolved(uint256 indexed projectId, uint256 milestoneIndex, bool approvedByArbiter);
     event ProjectCompleted(uint256 indexed projectId);
-    
-    event ProjectCancelled(uint256 indexed projectId);
-    
-    event RefundIssued(
-        uint256 indexed projectId,
-        address indexed client,
-        uint256 amount
-    );
-    
-    event PaymentReleased(
-        uint256 indexed projectId,
-        address indexed freelancer,
-        uint256 amount
-    );
-    
-    // Modifiers
-    modifier onlyClient(uint256 _projectId) {
-        require(
-            msg.sender == projects[_projectId].client,
-            "Only client can call this function"
-        );
+
+    modifier exists(uint256 id) {
+        require(id < projectCounter, "Project does not exist");
         _;
     }
-    
-    modifier onlyFreelancer(uint256 _projectId) {
-        require(
-            msg.sender == projects[_projectId].freelancer,
-            "Only freelancer can call this function"
-        );
+    modifier onlyClient(uint256 id) {
+        require(msg.sender == projects[id].client, "Only client can call this function");
         _;
     }
-    
-    modifier onlyArbiter(uint256 _projectId) {
-        require(
-            msg.sender == projects[_projectId].arbiter,
-            "Only arbiter can call this function"
-        );
+    modifier onlyFreelancer(uint256 id) {
+        require(msg.sender == projects[id].freelancer, "Only freelancer can call this function");
         _;
     }
-    
-    modifier projectExists(uint256 _projectId) {
-        require(_projectId < projectCounter, "Project does not exist");
+    modifier onlyArbiter(uint256 id) {
+        require(msg.sender == projects[id].arbiter, "Only arbiter can call this function");
         _;
     }
-    
-    modifier inStatus(uint256 _projectId, ProjectStatus _status) {
-        require(
-            projects[_projectId].status == _status,
-            "Invalid project status"
-        );
-        _;
-    }
-    
-    /**
-     * @dev Create a new freelance project
-     * @param _freelancer Address of the freelancer
-     * @param _arbiter Address of the arbiter for dispute resolution
-     * @param _projectDescription Description of the project
-     * @param _deadline Project deadline timestamp
-     */
+
     function createProject(
-        address payable _freelancer,
-        address payable _arbiter,
-        string memory _projectDescription,
-        uint256 _deadline
-    ) external returns (uint256) {
-        require(_freelancer != address(0), "Invalid freelancer address");
-        require(_arbiter != address(0), "Invalid arbiter address");
-        require(_freelancer != msg.sender, "Client cannot be freelancer");
-        require(_arbiter != msg.sender, "Client cannot be arbiter");
-        require(_arbiter != _freelancer, "Arbiter cannot be freelancer");
-        require(_deadline > block.timestamp, "Deadline must be in the future");
-        
-        uint256 projectId = projectCounter++;
-        Project storage project = projects[projectId];
-        
-        project.client = payable(msg.sender);
-        project.freelancer = _freelancer;
-        project.arbiter = _arbiter;
-        project.projectDescription = _projectDescription;
-        project.createdAt = block.timestamp;
-        project.deadline = _deadline;
-        project.status = ProjectStatus.Created;
-        
-        emit ProjectCreated(projectId, msg.sender, _freelancer, 0);
-        
-        return projectId;
+        address payable freelancer,
+        address payable arbiter,
+        string memory projectDescription,
+        uint256 deadline
+    ) external returns (uint256 id) {
+        require(freelancer != address(0), "Invalid freelancer address");
+        require(arbiter != address(0), "Invalid arbiter address");
+        require(freelancer != msg.sender, "Client cannot be freelancer");
+        require(arbiter != msg.sender, "Client cannot be arbiter");
+        require(arbiter != freelancer, "Arbiter cannot be freelancer");
+        require(deadline > block.timestamp, "Deadline must be in the future");
+
+        id = projectCounter++;
+        Project storage p = projects[id];
+        p.client = payable(msg.sender);
+        p.freelancer = freelancer;
+        p.arbiter = arbiter;
+        p.projectDescription = projectDescription;
+        p.status = ProjectStatus.Created;
+        emit ProjectCreated(id, msg.sender, freelancer);
     }
-    
-    /**
-     * @dev Add a milestone to the project
-     * @param _projectId ID of the project
-     * @param _description Description of the milestone
-     * @param _amount Amount to be paid for this milestone
-     */
-    function addMilestone(
-        uint256 _projectId,
-        string memory _description,
-        uint256 _amount
-    ) external projectExists(_projectId) onlyClient(_projectId) inStatus(_projectId, ProjectStatus.Created) {
-        require(_amount > 0, "Milestone amount must be greater than 0");
-        
-        Project storage project = projects[_projectId];
-        
-        Milestone memory newMilestone = Milestone({
-            description: _description,
-            amount: _amount,
-            status: MilestoneStatus.Pending,
-            submittedTime: 0,
-            deliverableHash: ""
-        });
-        
-        project.milestones.push(newMilestone);
-        project.totalAmount += _amount;
-        
-        emit MilestoneAdded(_projectId, project.milestones.length - 1, _amount);
-    }
-    
-    /**
-     * @dev Start the project and fund the escrow
-     * @param _projectId ID of the project
-     */
-    function startProject(uint256 _projectId)
+
+    function addMilestone(uint256 id, string memory description, uint256 amount)
         external
-        payable
-        projectExists(_projectId)
-        onlyClient(_projectId)
-        inStatus(_projectId, ProjectStatus.Created)
+        exists(id)
+        onlyClient(id)
     {
-        Project storage project = projects[_projectId];
-        require(project.milestones.length > 0, "Project must have at least one milestone");
-        
-        // Calculate arbiter fee
-        project.arbiterFee = (project.totalAmount * ARBITER_FEE_PERCENTAGE) / 100;
-        uint256 totalRequired = project.totalAmount + project.arbiterFee;
-        
-        require(msg.value == totalRequired, "Must send exact total amount plus arbiter fee");
-        
-        project.status = ProjectStatus.InProgress;
-        
-        emit ProjectStarted(_projectId);
+        Project storage p = projects[id];
+        require(p.status == ProjectStatus.Created, "Invalid project status");
+        require(amount > 0, "Milestone amount must be greater than 0");
+        p.milestones.push(Milestone(description, amount, MilestoneStatus.Pending, 0, ""));
+        p.totalAmount += amount;
+        emit MilestoneAdded(id, p.milestones.length - 1, amount);
     }
-    
-    /**
-     * @dev Freelancer submits a completed milestone
-     * @param _projectId ID of the project
-     * @param _milestoneIndex Index of the milestone
-     * @param _deliverableHash IPFS hash or proof of work
-     */
-    function submitMilestone(
-        uint256 _projectId,
-        uint256 _milestoneIndex,
-        string memory _deliverableHash
-    ) external projectExists(_projectId) onlyFreelancer(_projectId) inStatus(_projectId, ProjectStatus.InProgress) {
-        Project storage project = projects[_projectId];
-        require(_milestoneIndex < project.milestones.length, "Invalid milestone index");
-        
-        Milestone storage milestone = project.milestones[_milestoneIndex];
-        require(
-            milestone.status == MilestoneStatus.Pending,
-            "Milestone already submitted or processed"
-        );
-        
-        milestone.status = MilestoneStatus.Submitted;
-        milestone.submittedTime = block.timestamp;
-        milestone.deliverableHash = _deliverableHash;
-        
-        emit MilestoneSubmitted(_projectId, _milestoneIndex, _deliverableHash);
+
+    function startProject(uint256 id) external payable exists(id) onlyClient(id) {
+        Project storage p = projects[id];
+        require(p.status == ProjectStatus.Created, "Invalid project status");
+        require(p.milestones.length > 0, "Project must have at least one milestone");
+        p.arbiterFee = (p.totalAmount * ARBITER_FEE_PERCENTAGE) / 100;
+        require(msg.value == p.totalAmount + p.arbiterFee, "Must send exact total amount plus arbiter fee");
+        p.status = ProjectStatus.InProgress;
+        emit ProjectStarted(id);
     }
-    
-    /**
-     * @dev Client approves a submitted milestone
-     * @param _projectId ID of the project
-     * @param _milestoneIndex Index of the milestone
-     */
-    function approveMilestone(uint256 _projectId, uint256 _milestoneIndex)
+
+    function submitMilestone(uint256 id, uint256 milestoneIndex, string memory deliverableHash)
         external
-        projectExists(_projectId)
-        onlyClient(_projectId)
-        inStatus(_projectId, ProjectStatus.InProgress)
+        exists(id)
+        onlyFreelancer(id)
     {
-        Project storage project = projects[_projectId];
-        require(_milestoneIndex < project.milestones.length, "Invalid milestone index");
-        
-        Milestone storage milestone = project.milestones[_milestoneIndex];
-        require(
-            milestone.status == MilestoneStatus.Submitted,
-            "Milestone not submitted"
-        );
-        
-        milestone.status = MilestoneStatus.Approved;
-        
-        // Release payment to freelancer
-        project.paidAmount += milestone.amount;
-        project.freelancer.transfer(milestone.amount);
-        
-        emit MilestoneApproved(_projectId, _milestoneIndex, milestone.amount);
-        emit PaymentReleased(_projectId, project.freelancer, milestone.amount);
-        
-        // Check if all milestones are complete
-        _checkProjectCompletion(_projectId);
+        Project storage p = projects[id];
+        require(p.status == ProjectStatus.InProgress, "Invalid project status");
+        require(milestoneIndex < p.milestones.length, "Invalid milestone index");
+        Milestone storage m = p.milestones[milestoneIndex];
+        require(m.status == MilestoneStatus.Pending, "Milestone already submitted or processed");
+        m.status = MilestoneStatus.Submitted;
+        m.submittedTime = block.timestamp;
+        m.deliverableHash = deliverableHash;
+        emit MilestoneSubmitted(id, milestoneIndex, deliverableHash);
     }
-    
-    /**
-     * @dev Auto-approve milestone if client doesn't respond within deadline
-     * @param _projectId ID of the project
-     * @param _milestoneIndex Index of the milestone
-     */
-    function autoApproveMilestone(uint256 _projectId, uint256 _milestoneIndex)
+
+    function approveMilestone(uint256 id, uint256 milestoneIndex) external exists(id) onlyClient(id) {
+        Project storage p = projects[id];
+        require(p.status == ProjectStatus.InProgress, "Invalid project status");
+        require(milestoneIndex < p.milestones.length, "Invalid milestone index");
+        Milestone storage m = p.milestones[milestoneIndex];
+        require(m.status == MilestoneStatus.Submitted, "Milestone not submitted");
+        _payMilestone(p, id, milestoneIndex, m);
+        _checkCompletion(p, id);
+    }
+
+    function disputeMilestone(uint256 id, uint256 milestoneIndex) external exists(id) onlyClient(id) {
+        Project storage p = projects[id];
+        require(p.status == ProjectStatus.InProgress, "Invalid project status");
+        require(milestoneIndex < p.milestones.length, "Invalid milestone index");
+        Milestone storage m = p.milestones[milestoneIndex];
+        require(m.status == MilestoneStatus.Submitted, "Milestone not submitted");
+        m.status = MilestoneStatus.Disputed;
+        p.status = ProjectStatus.Disputed;
+        emit MilestoneDisputed(id, milestoneIndex);
+    }
+
+    function resolveDispute(uint256 id, uint256 milestoneIndex, bool approveFreelancer)
         external
-        projectExists(_projectId)
-        inStatus(_projectId, ProjectStatus.InProgress)
+        exists(id)
+        onlyArbiter(id)
     {
-        Project storage project = projects[_projectId];
-        require(_milestoneIndex < project.milestones.length, "Invalid milestone index");
-        
-        Milestone storage milestone = project.milestones[_milestoneIndex];
-        require(
-            milestone.status == MilestoneStatus.Submitted,
-            "Milestone not submitted"
-        );
-        require(
-            block.timestamp >= milestone.submittedTime + APPROVAL_DEADLINE,
-            "Approval deadline not reached"
-        );
-        
-        milestone.status = MilestoneStatus.Approved;
-        
-        // Release payment to freelancer
-        project.paidAmount += milestone.amount;
-        project.freelancer.transfer(milestone.amount);
-        
-        emit MilestoneApproved(_projectId, _milestoneIndex, milestone.amount);
-        emit PaymentReleased(_projectId, project.freelancer, milestone.amount);
-        
-        // Check if all milestones are complete
-        _checkProjectCompletion(_projectId);
-    }
-    
-    /**
-     * @dev Client disputes a submitted milestone
-     * @param _projectId ID of the project
-     * @param _milestoneIndex Index of the milestone
-     */
-    function disputeMilestone(uint256 _projectId, uint256 _milestoneIndex)
-        external
-        projectExists(_projectId)
-        onlyClient(_projectId)
-        inStatus(_projectId, ProjectStatus.InProgress)
-    {
-        Project storage project = projects[_projectId];
-        require(_milestoneIndex < project.milestones.length, "Invalid milestone index");
-        
-        Milestone storage milestone = project.milestones[_milestoneIndex];
-        require(
-            milestone.status == MilestoneStatus.Submitted,
-            "Milestone not submitted"
-        );
-        
-        milestone.status = MilestoneStatus.Disputed;
-        project.status = ProjectStatus.Disputed;
-        
-        emit MilestoneDisputed(_projectId, _milestoneIndex);
-    }
-    
-    /**
-     * @dev Arbiter resolves a disputed milestone
-     * @param _projectId ID of the project
-     * @param _milestoneIndex Index of the milestone
-     * @param _approveFreelancer True to approve freelancer's work, false to refund client
-     */
-    function resolveDispute(
-        uint256 _projectId,
-        uint256 _milestoneIndex,
-        bool _approveFreelancer
-    ) external projectExists(_projectId) onlyArbiter(_projectId) inStatus(_projectId, ProjectStatus.Disputed) {
-        Project storage project = projects[_projectId];
-        require(_milestoneIndex < project.milestones.length, "Invalid milestone index");
-        
-        Milestone storage milestone = project.milestones[_milestoneIndex];
-        require(
-            milestone.status == MilestoneStatus.Disputed,
-            "Milestone not disputed"
-        );
-        
-        if (_approveFreelancer) {
-            milestone.status = MilestoneStatus.Approved;
-            project.paidAmount += milestone.amount;
-            project.freelancer.transfer(milestone.amount);
-            emit PaymentReleased(_projectId, project.freelancer, milestone.amount);
+        Project storage p = projects[id];
+        require(p.status == ProjectStatus.Disputed, "Invalid project status");
+        require(milestoneIndex < p.milestones.length, "Invalid milestone index");
+        Milestone storage m = p.milestones[milestoneIndex];
+        require(m.status == MilestoneStatus.Disputed, "Milestone not disputed");
+
+        if (approveFreelancer) {
+            _payMilestone(p, id, milestoneIndex, m);
         } else {
-            milestone.status = MilestoneStatus.Pending;
+            m.status = MilestoneStatus.Pending;
         }
-        
-        // Pay arbiter fee
-        if (!project.arbiterPaid) {
-            project.arbiter.transfer(project.arbiterFee);
-            project.arbiterPaid = true;
+
+        if (!p.arbiterPaid) {
+            p.arbiterPaid = true;
+            p.arbiter.transfer(p.arbiterFee);
         }
-        
-        project.status = ProjectStatus.InProgress;
-        
-        emit DisputeResolved(_projectId, _milestoneIndex, _approveFreelancer);
-        
-        // Check if all milestones are complete
-        _checkProjectCompletion(_projectId);
+
+        p.status = ProjectStatus.InProgress;
+        emit DisputeResolved(id, milestoneIndex, approveFreelancer);
+        _checkCompletion(p, id);
     }
-    
-    /**
-     * @dev Cancel project before it starts (only in Created status)
-     * @param _projectId ID of the project
-     */
-    function cancelProject(uint256 _projectId)
-        external
-        projectExists(_projectId)
-        onlyClient(_projectId)
-        inStatus(_projectId, ProjectStatus.Created)
-    {
-        projects[_projectId].status = ProjectStatus.Cancelled;
-        emit ProjectCancelled(_projectId);
+
+    function _payMilestone(Project storage p, uint256 id, uint256 milestoneIndex, Milestone storage m) private {
+        m.status = MilestoneStatus.Paid;
+        p.paidAmount += m.amount;
+        p.freelancer.transfer(m.amount);
+        emit MilestoneApproved(id, milestoneIndex, m.amount);
     }
-    
-    /**
-     * @dev Request refund for remaining milestones (mutual agreement)
-     * @param _projectId ID of the project
-     */
-    function requestRefund(uint256 _projectId)
-        external
-        projectExists(_projectId)
-        inStatus(_projectId, ProjectStatus.InProgress)
-    {
-        require(
-            msg.sender == projects[_projectId].client ||
-                msg.sender == projects[_projectId].freelancer,
-            "Only client or freelancer can request refund"
-        );
-        
-        Project storage project = projects[_projectId];
-        
-        // Calculate remaining amount
-        uint256 remainingAmount = project.totalAmount - project.paidAmount;
-        
-        if (remainingAmount > 0) {
-            project.status = ProjectStatus.Refunded;
-            project.client.transfer(remainingAmount + project.arbiterFee);
-            
-            emit RefundIssued(_projectId, project.client, remainingAmount);
+
+    function _checkCompletion(Project storage p, uint256 id) private {
+        for (uint256 i = 0; i < p.milestones.length; i++) {
+            if (p.milestones[i].status != MilestoneStatus.Paid) return;
         }
-        
-        project.status = ProjectStatus.Cancelled;
-        emit ProjectCancelled(_projectId);
+
+        p.status = ProjectStatus.Completed;
+        if (!p.arbiterPaid) {
+            p.arbiterPaid = true;
+            p.arbiter.transfer(p.arbiterFee);
+        }
+        emit ProjectCompleted(id);
     }
-    
-    /**
-     * @dev Internal function to check if all milestones are completed
-     * @param _projectId ID of the project
-     */
-    function _checkProjectCompletion(uint256 _projectId) private {
-        Project storage project = projects[_projectId];
-        
-        bool allComplete = true;
-        for (uint256 i = 0; i < project.milestones.length; i++) {
-            if (project.milestones[i].status != MilestoneStatus.Approved &&
-                project.milestones[i].status != MilestoneStatus.Paid) {
-                allComplete = false;
-                break;
-            }
-        }
-        
-        if (allComplete) {
-            project.status = ProjectStatus.Completed;
-            
-            // Pay arbiter fee if not already paid
-            if (!project.arbiterPaid) {
-                project.arbiter.transfer(project.arbiterFee);
-                project.arbiterPaid = true;
-            }
-            
-            emit ProjectCompleted(_projectId);
-        }
-    }
-    
-    /**
-     * @dev Get project details
-     * @param _projectId ID of the project
-     */
-    function getProject(uint256 _projectId)
+
+    function getProject(uint256 id)
         external
         view
-        projectExists(_projectId)
+        exists(id)
         returns (
             address client,
             address freelancer,
@@ -483,55 +215,19 @@ contract FreelanceEscrow {
             uint256 milestoneCount
         )
     {
-        Project storage project = projects[_projectId];
-        return (
-            project.client,
-            project.freelancer,
-            project.arbiter,
-            project.projectDescription,
-            project.totalAmount,
-            project.paidAmount,
-            project.status,
-            project.milestones.length
-        );
+        Project storage p = projects[id];
+        return (p.client, p.freelancer, p.arbiter, p.projectDescription, p.totalAmount, p.paidAmount, p.status, p.milestones.length);
     }
-    
-    /**
-     * @dev Get milestone details
-     * @param _projectId ID of the project
-     * @param _milestoneIndex Index of the milestone
-     */
-    function getMilestone(uint256 _projectId, uint256 _milestoneIndex)
+
+    function getMilestone(uint256 id, uint256 milestoneIndex)
         external
         view
-        projectExists(_projectId)
-        returns (
-            string memory description,
-            uint256 amount,
-            MilestoneStatus status,
-            uint256 submittedTime,
-            string memory deliverableHash
-        )
+        exists(id)
+        returns (string memory description, uint256 amount, MilestoneStatus status, uint256 submittedTime, string memory deliverableHash)
     {
-        require(
-            _milestoneIndex < projects[_projectId].milestones.length,
-            "Invalid milestone index"
-        );
-        
-        Milestone storage milestone = projects[_projectId].milestones[_milestoneIndex];
-        return (
-            milestone.description,
-            milestone.amount,
-            milestone.status,
-            milestone.submittedTime,
-            milestone.deliverableHash
-        );
-    }
-    
-    /**
-     * @dev Get balance of the contract
-     */
-    function getContractBalance() external view returns (uint256) {
-        return address(this).balance;
+        Project storage p = projects[id];
+        require(milestoneIndex < p.milestones.length, "Invalid milestone index");
+        Milestone storage m = p.milestones[milestoneIndex];
+        return (m.description, m.amount, m.status, m.submittedTime, m.deliverableHash);
     }
 }

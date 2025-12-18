@@ -10,8 +10,7 @@
     "migrate:dev": "truffle migrate --network development",
     "migrate:sepolia": "truffle migrate --network sepolia",
     "test": "truffle test",
-    "console": "truffle console",
-    "verify": "truffle run verify FreelanceEscrow --network sepolia"
+    "console": "truffle console"
   },
   "keywords": [
     "ethereum",
@@ -30,7 +29,6 @@
     "dotenv": "^16.3.1"
   },
   "devDependencies": {
-    "truffle": "^5.5.7",
-    "truffle-plugin-verify": "^0.6.7"
+    "truffle": "^5.5.7"
   }
 }

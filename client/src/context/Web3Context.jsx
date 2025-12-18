@@ -1,182 +1,83 @@
-import { createContext, useState, useEffect, useContext } from 'react'
+import { createContext, useContext, useEffect, useState } from 'react'
 import Web3 from 'web3'
-import { toast } from 'react-toastify'
 import FreelanceEscrowABI from '../contracts/FreelanceEscrow.json'
 
-const Web3Context = createContext()
+const Web3Context = createContext(null)
 
 export const useWeb3 = () => {
-  const context = useContext(Web3Context)
-  if (!context) {
-    throw new Error('useWeb3 must be used within Web3Provider')
-  }
-  return context
+  const ctx = useContext(Web3Context)
+  if (!ctx) throw new Error('useWeb3 must be used within Web3Provider')
+  return ctx
 }
+
+const CONTRACT_ADDRESS = import.meta?.env?.VITE_CONTRACT_ADDRESS || '0x3ed0245356818f09E559d464BB0D2641e8fE4fc5'
 
 export const Web3Provider = ({ children }) => {
   const [web3, setWeb3] = useState(null)
-  const [account, setAccount] = useState(null)
+  const [account, setAccount] = useState('')
   const [contract, setContract] = useState(null)
-  const [networkId, setNetworkId] = useState(null)
   const [balance, setBalance] = useState('0')
+  const [networkId, setNetworkId] = useState('')
   const [loading, setLoading] = useState(true)
-  const [isConnected, setIsConnected] = useState(false)
+  const isConnected = Boolean(account)
 
-  // Contract address - use Vite env (import.meta.env) in browser builds
-  // To override, create `client/.env` with `VITE_CONTRACT_ADDRESS=0x...`
-  const CONTRACT_ADDRESS = import.meta?.env?.VITE_CONTRACT_ADDRESS || '0x3ed0245356818f09E559d464BB0D2641e8fE4fc5'
-
-  const initWeb3 = async () => {
-    try {
-      // Check if MetaMask is installed
-      if (window.ethereum) {
-        const web3Instance = new Web3(window.ethereum)
-        setWeb3(web3Instance)
-
-        // Get network ID
-        const netId = await web3Instance.eth.net.getId()
-        setNetworkId(Number(netId))
-
-        // Check if already connected
-        const accounts = await web3Instance.eth.getAccounts()
-        if (accounts.length > 0) {
-          await handleAccountsChanged(accounts, web3Instance)
-        }
-
-        // Listen for account changes
-        window.ethereum.on('accountsChanged', (accounts) => {
-          handleAccountsChanged(accounts, web3Instance)
-        })
-
-        // Listen for network changes
-        window.ethereum.on('chainChanged', () => {
-          window.location.reload()
-        })
-
-        setLoading(false)
-      } else {
-        toast.error('Please install MetaMask to use this DApp')
-        setLoading(false)
-      }
-    } catch (error) {
-      console.error('Error initializing Web3:', error)
-      toast.error('Failed to initialize Web3')
+  useEffect(() => {
+    if (!window.ethereum) {
       setLoading(false)
+      return
     }
-  }
+    const instance = new Web3(window.ethereum)
+    setWeb3(instance)
+    instance.eth.net.getId().then((id) => setNetworkId(String(id)))
 
-  const handleAccountsChanged = async (accounts, web3Instance) => {
-    if (accounts.length === 0) {
-      // User disconnected
-      setAccount(null)
-      setBalance('0')
-      setIsConnected(false)
-      setContract(null)
-    } else {
-      // User connected
-      setAccount(accounts[0])
-      setIsConnected(true)
-
-      // Get balance
-      const balanceWei = await web3Instance.eth.getBalance(accounts[0])
-      const balanceEth = web3Instance.utils.fromWei(balanceWei, 'ether')
-      setBalance(parseFloat(balanceEth).toFixed(4))
-
-      // Initialize contract
-      try {
-        const contractInstance = new web3Instance.eth.Contract(
-          FreelanceEscrowABI.abi,
-          CONTRACT_ADDRESS
-        )
-        setContract(contractInstance)
-      } catch (error) {
-        console.error('Error initializing contract:', error)
-      }
-    }
-  }
-
-  const connectWallet = async () => {
-    try {
-      if (!window.ethereum) {
-        toast.error('Please install MetaMask')
+    const handleAccountsChanged = async (accs) => {
+      const next = accs[0]
+      if (!next) {
+        setAccount('')
+        setBalance('0')
+        setContract(null)
         return
       }
+      setAccount(next)
+      const wei = await instance.eth.getBalance(next)
+      setBalance(instance.utils.fromWei(wei, 'ether'))
+      setContract(new instance.eth.Contract(FreelanceEscrowABI.abi, CONTRACT_ADDRESS))
+    }
 
-      // Request account access
-      const accounts = await window.ethereum.request({
-        method: 'eth_requestAccounts'
-      })
+    instance.eth.getAccounts().then(handleAccountsChanged)
+    window.ethereum.on('accountsChanged', handleAccountsChanged)
+    window.ethereum.on('chainChanged', () => window.location.reload())
+    setLoading(false)
 
-      await handleAccountsChanged(accounts, web3)
-      toast.success('Wallet connected successfully!')
-    } catch (error) {
-      console.error('Error connecting wallet:', error)
-      toast.error('Failed to connect wallet')
+    return () => {
+      window.ethereum?.removeListener('accountsChanged', handleAccountsChanged)
+    }
+  }, [])
+
+  const connectWallet = async () => {
+    if (!window.ethereum) return
+    const accs = await window.ethereum.request({ method: 'eth_requestAccounts' })
+    if (accs?.length) {
+      const instance = web3 || new Web3(window.ethereum)
+      const wei = await instance.eth.getBalance(accs[0])
+      setAccount(accs[0])
+      setBalance(instance.utils.fromWei(wei, 'ether'))
+      setContract(new instance.eth.Contract(FreelanceEscrowABI.abi, CONTRACT_ADDRESS))
+      setWeb3(instance)
     }
   }
 
   const disconnectWallet = () => {
-    setAccount(null)
+    setAccount('')
     setBalance('0')
-    setIsConnected(false)
     setContract(null)
-    toast.info('Wallet disconnected')
   }
 
-  const switchNetwork = async (chainId) => {
-    try {
-      await window.ethereum.request({
-        method: 'wallet_switchEthereumChain',
-        params: [{ chainId: Web3.utils.toHex(chainId) }]
-      })
-    } catch (error) {
-      if (error.code === 4902) {
-        toast.error('Please add this network to MetaMask')
-      } else {
-        console.error('Error switching network:', error)
-        toast.error('Failed to switch network')
-      }
-    }
-  }
-
-  const getNetworkName = () => {
-    const networks = {
-      1: 'Ethereum Mainnet',
-      5: 'Goerli Testnet',
-      11155111: 'Sepolia Testnet',
-      1337: 'Ganache Local',
-      5777: 'Ganache Local'
-    }
-    return networks[networkId] || 'Unknown Network'
-  }
-
-  const refreshBalance = async () => {
-    if (web3 && account) {
-      const balanceWei = await web3.eth.getBalance(account)
-      const balanceEth = web3.utils.fromWei(balanceWei, 'ether')
-      setBalance(parseFloat(balanceEth).toFixed(4))
-    }
-  }
-
-  useEffect(() => {
-    initWeb3()
-  }, [])
-
-  const value = {
-    web3,
-    account,
-    contract,
-    networkId,
-    balance,
-    loading,
-    isConnected,
-    connectWallet,
-    disconnectWallet,
-    switchNetwork,
-    getNetworkName,
-    refreshBalance,
-    CONTRACT_ADDRESS
-  }
-
-  return <Web3Context.Provider value={value}>{children}</Web3Context.Provider>
+  return (
+    <Web3Context.Provider
+      value={{ web3, account, contract, balance, networkId, loading, isConnected, connectWallet, disconnectWallet }}
+    >
+      {children}
+    </Web3Context.Provider>
+  )
 }
