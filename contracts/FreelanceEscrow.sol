@@ -73,15 +73,13 @@ contract FreelanceEscrow {
     function createProject(
         address payable freelancer,
         address payable arbiter,
-        string memory projectDescription,
-        uint256 deadline
+        string memory projectDescription
     ) external returns (uint256 id) {
         require(freelancer != address(0), "Invalid freelancer address");
         require(arbiter != address(0), "Invalid arbiter address");
         require(freelancer != msg.sender, "Client cannot be freelancer");
         require(arbiter != msg.sender, "Client cannot be arbiter");
         require(arbiter != freelancer, "Arbiter cannot be freelancer");
-        require(deadline > block.timestamp, "Deadline must be in the future");
 
         id = projectCounter++;
         Project storage p = projects[id];

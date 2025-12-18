@@ -82,7 +82,6 @@ const Dashboard = () => {
       return show('Invalid freelancer or arbiter address')
     }
 
-
     setBusy(true)
     try {
       const deadline = Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60
@@ -241,7 +240,7 @@ const Dashboard = () => {
                 required
               />
             </label>
-
+            {/* Deadline removed */}
             <label className="field field-full">
               <span>Milestones</span>
               <textarea
