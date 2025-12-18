@@ -10,7 +10,14 @@ export const useWeb3 = () => {
   return ctx
 }
 
-const CONTRACT_ADDRESS = import.meta?.env?.VITE_CONTRACT_ADDRESS || '0x3ed0245356818f09E559d464BB0D2641e8fE4fc5'
+const FALLBACK_CONTRACT_ADDRESS = '0x3ed0245356818f09E559d464BB0D2641e8fE4fc5'
+
+const resolveContractAddress = (networkId) => {
+  const envAddr = import.meta?.env?.VITE_CONTRACT_ADDRESS
+  if (envAddr) return envAddr
+  const fromArtifact = FreelanceEscrowABI?.networks?.[String(networkId)]?.address
+  return fromArtifact || FALLBACK_CONTRACT_ADDRESS
+}
 
 export const Web3Provider = ({ children }) => {
   const [web3, setWeb3] = useState(null)
@@ -28,7 +35,12 @@ export const Web3Provider = ({ children }) => {
     }
     const instance = new Web3(window.ethereum)
     setWeb3(instance)
-    instance.eth.net.getId().then((id) => setNetworkId(String(id)))
+    let contractAddress = ''
+    instance.eth.net.getId().then((id) => {
+      setNetworkId(String(id))
+      contractAddress = resolveContractAddress(id)
+      console.log('Web3 init', { networkId: String(id), contractAddress })
+    })
 
     const handleAccountsChanged = async (accs) => {
       const next = accs[0]
@@ -41,7 +53,8 @@ export const Web3Provider = ({ children }) => {
       setAccount(next)
       const wei = await instance.eth.getBalance(next)
       setBalance(instance.utils.fromWei(wei, 'ether'))
-      setContract(new instance.eth.Contract(FreelanceEscrowABI.abi, CONTRACT_ADDRESS))
+      const addr = contractAddress || resolveContractAddress(networkId)
+      setContract(new instance.eth.Contract(FreelanceEscrowABI.abi, addr))
     }
 
     instance.eth.getAccounts().then(handleAccountsChanged)
@@ -59,10 +72,13 @@ export const Web3Provider = ({ children }) => {
     const accs = await window.ethereum.request({ method: 'eth_requestAccounts' })
     if (accs?.length) {
       const instance = web3 || new Web3(window.ethereum)
+      const id = await instance.eth.net.getId()
+      setNetworkId(String(id))
+      const addr = resolveContractAddress(id)
       const wei = await instance.eth.getBalance(accs[0])
       setAccount(accs[0])
       setBalance(instance.utils.fromWei(wei, 'ether'))
-      setContract(new instance.eth.Contract(FreelanceEscrowABI.abi, CONTRACT_ADDRESS))
+      setContract(new instance.eth.Contract(FreelanceEscrowABI.abi, addr))
       setWeb3(instance)
     }
   }

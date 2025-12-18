@@ -85,8 +85,9 @@ const Dashboard = () => {
 
     setBusy(true)
     try {
+      const deadline = Math.floor(Date.now() / 1000) + 7 * 24 * 60 * 60
       const created = await contract.methods
-        .createProject(form.freelancer, form.arbiter, form.description || 'Project')
+        .createProject(form.freelancer, form.arbiter, form.description || 'Project', deadline)
         .send({ from: account })
       const projectId = created.events.ProjectCreated.returnValues.projectId
 

@@ -10,19 +10,19 @@
           "type": "uint256"
         },
         {
-          "indexed": true,
-          "internalType": "address",
-          "name": "client",
-          "type": "address"
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "milestoneIndex",
+          "type": "uint256"
         },
         {
-          "indexed": true,
-          "internalType": "address",
-          "name": "freelancer",
-          "type": "address"
+          "indexed": false,
+          "internalType": "bool",
+          "name": "approvedByArbiter",
+          "type": "bool"
         }
       ],
-      "name": "ProjectCreated",
+      "name": "DisputeResolved",
       "type": "event"
     },
     {
@@ -48,44 +48,6 @@
         }
       ],
       "name": "MilestoneAdded",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "uint256",
-          "name": "projectId",
-          "type": "uint256"
-        }
-      ],
-      "name": "ProjectStarted",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "uint256",
-          "name": "projectId",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "milestoneIndex",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "internalType": "string",
-          "name": "deliverableHash",
-          "type": "string"
-        }
-      ],
-      "name": "MilestoneSubmitted",
       "type": "event"
     },
     {
@@ -149,12 +111,12 @@
         },
         {
           "indexed": false,
-          "internalType": "bool",
-          "name": "approvedByArbiter",
-          "type": "bool"
+          "internalType": "string",
+          "name": "deliverableHash",
+          "type": "string"
         }
       ],
-      "name": "DisputeResolved",
+      "name": "MilestoneSubmitted",
       "type": "event"
     },
     {
@@ -171,6 +133,58 @@
       "type": "event"
     },
     {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "projectId",
+          "type": "uint256"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "client",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "freelancer",
+          "type": "address"
+        }
+      ],
+      "name": "ProjectCreated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "projectId",
+          "type": "uint256"
+        }
+      ],
+      "name": "ProjectStarted",
+      "type": "event"
+    },
+    {
+      "inputs": [],
+      "name": "ARBITER_FEE_PERCENTAGE",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true
+    },
+    {
       "inputs": [],
       "name": "projectCounter",
       "outputs": [
@@ -181,7 +195,68 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "projects",
+      "outputs": [
+        {
+          "internalType": "address payable",
+          "name": "client",
+          "type": "address"
+        },
+        {
+          "internalType": "address payable",
+          "name": "freelancer",
+          "type": "address"
+        },
+        {
+          "internalType": "address payable",
+          "name": "arbiter",
+          "type": "address"
+        },
+        {
+          "internalType": "string",
+          "name": "projectDescription",
+          "type": "string"
+        },
+        {
+          "internalType": "uint256",
+          "name": "totalAmount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "arbiterFee",
+          "type": "uint256"
+        },
+        {
+          "internalType": "enum FreelanceEscrow.ProjectStatus",
+          "name": "status",
+          "type": "uint8"
+        },
+        {
+          "internalType": "uint256",
+          "name": "paidAmount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bool",
+          "name": "arbiterPaid",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [
@@ -199,6 +274,11 @@
           "internalType": "string",
           "name": "projectDescription",
           "type": "string"
+        },
+        {
+          "internalType": "uint256",
+          "name": "deadline",
+          "type": "uint256"
         }
       ],
       "name": "createProject",
@@ -246,7 +326,8 @@
       "name": "startProject",
       "outputs": [],
       "stateMutability": "payable",
-      "type": "function"
+      "type": "function",
+      "payable": true
     },
     {
       "inputs": [
@@ -371,7 +452,7 @@
           "type": "uint256"
         },
         {
-          "internalType": "uint8",
+          "internalType": "enum FreelanceEscrow.ProjectStatus",
           "name": "status",
           "type": "uint8"
         },
@@ -382,7 +463,8 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     },
     {
       "inputs": [
@@ -410,7 +492,7 @@
           "type": "uint256"
         },
         {
-          "internalType": "uint8",
+          "internalType": "enum FreelanceEscrow.MilestoneStatus",
           "name": "status",
           "type": "uint8"
         },
@@ -426,7 +508,16 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function"
+      "type": "function",
+      "constant": true
     }
-  ]
+  ],
+  "networks": {
+    "5777": {
+      "events": {},
+      "links": {},
+      "address": "0xf19e82ad7B5b8abB3D710a21503ea5fF246a4891",
+      "transactionHash": "0x3833c08bf56da34946f948dba52c785c79ea14ca28d3c415ea25322bae992bbd"
+    }
+  }
 }
