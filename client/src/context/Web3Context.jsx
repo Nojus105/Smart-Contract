@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useRef, useState } from 'react'
 import Web3 from 'web3'
 import FreelanceEscrowABI from '../contracts/FreelanceEscrow.json'
 
@@ -10,13 +10,11 @@ export const useWeb3 = () => {
   return ctx
 }
 
-const FALLBACK_CONTRACT_ADDRESS = '0x3ed0245356818f09E559d464BB0D2641e8fE4fc5'
-
 const resolveContractAddress = (networkId) => {
   const envAddr = import.meta?.env?.VITE_CONTRACT_ADDRESS
   if (envAddr) return envAddr
   const fromArtifact = FreelanceEscrowABI?.networks?.[String(networkId)]?.address
-  return fromArtifact || FALLBACK_CONTRACT_ADDRESS
+  return fromArtifact || ''
 }
 
 export const Web3Provider = ({ children }) => {
@@ -26,6 +24,7 @@ export const Web3Provider = ({ children }) => {
   const [balance, setBalance] = useState('0')
   const [networkId, setNetworkId] = useState('')
   const [loading, setLoading] = useState(true)
+  const contractAddressRef = useRef('')
   const isConnected = Boolean(account)
 
   useEffect(() => {
@@ -35,14 +34,30 @@ export const Web3Provider = ({ children }) => {
     }
     const instance = new Web3(window.ethereum)
     setWeb3(instance)
-    let contractAddress = ''
-    instance.eth.net.getId().then((id) => {
-      setNetworkId(String(id))
-      contractAddress = resolveContractAddress(id)
-      console.log('Web3 init', { networkId: String(id), contractAddress })
-    })
 
-    const handleAccountsChanged = async (accs) => {
+    const init = async () => {
+      const id = await instance.eth.net.getId()
+      const addr = resolveContractAddress(id)
+      if (!addr) {
+        console.error(
+          'No contract address configured for this network.',
+          { networkId: String(id), hint: 'Set VITE_CONTRACT_ADDRESS or add networks[networkId].address to the artifact.' }
+        )
+        contractAddressRef.current = ''
+        setNetworkId(String(id))
+        setContract(null)
+        setLoading(false)
+        return
+      }
+      contractAddressRef.current = addr
+      setNetworkId(String(id))
+      console.log('Web3 init', { networkId: String(id), contractAddress: addr })
+      const accs = await instance.eth.getAccounts()
+      await handleAccountsChanged(accs, addr)
+      setLoading(false)
+    }
+
+    const handleAccountsChanged = async (accs, resolvedAddr) => {
       const next = accs[0]
       if (!next) {
         setAccount('')
@@ -53,17 +68,25 @@ export const Web3Provider = ({ children }) => {
       setAccount(next)
       const wei = await instance.eth.getBalance(next)
       setBalance(instance.utils.fromWei(wei, 'ether'))
-      const addr = contractAddress || resolveContractAddress(networkId)
+      const addr = resolvedAddr || contractAddressRef.current || resolveContractAddress(networkId)
+      if (!addr) {
+        setContract(null)
+        return
+      }
       setContract(new instance.eth.Contract(FreelanceEscrowABI.abi, addr))
     }
 
-    instance.eth.getAccounts().then(handleAccountsChanged)
-    window.ethereum.on('accountsChanged', handleAccountsChanged)
+    init().catch((err) => {
+      console.error('Web3 init failed', err)
+      setLoading(false)
+    })
+
+    const accountsChangedListener = (accs) => handleAccountsChanged(accs, contractAddressRef.current)
+    window.ethereum.on('accountsChanged', accountsChangedListener)
     window.ethereum.on('chainChanged', () => window.location.reload())
-    setLoading(false)
 
     return () => {
-      window.ethereum?.removeListener('accountsChanged', handleAccountsChanged)
+      window.ethereum?.removeListener('accountsChanged', accountsChangedListener)
     }
   }, [])
 
@@ -75,6 +98,15 @@ export const Web3Provider = ({ children }) => {
       const id = await instance.eth.net.getId()
       setNetworkId(String(id))
       const addr = resolveContractAddress(id)
+      if (!addr) {
+        console.error(
+          'No contract address configured for this network.',
+          { networkId: String(id), hint: 'Set VITE_CONTRACT_ADDRESS or add networks[networkId].address to the artifact.' }
+        )
+        setContract(null)
+        setWeb3(instance)
+        return
+      }
       const wei = await instance.eth.getBalance(accs[0])
       setAccount(accs[0])
       setBalance(instance.utils.fromWei(wei, 'ether'))
