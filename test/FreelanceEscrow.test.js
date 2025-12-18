@@ -10,8 +10,7 @@ contract("FreelanceEscrow", (accounts) => {
   });
 
   const createFundedProject = async () => {
-    const deadline = Math.floor(Date.now() / 1000) + 3600;
-    const tx = await escrow.createProject(freelancer, arbiter, "Work", deadline, { from: client });
+    const tx = await escrow.createProject(freelancer, arbiter, "Work", { from: client });
     const id = tx.logs[0].args.projectId.toString();
     await escrow.addMilestone(id, "M1", milestoneAmount, { from: client });
     const fee = (BigInt(milestoneAmount) * 2n) / 100n;
@@ -20,9 +19,8 @@ contract("FreelanceEscrow", (accounts) => {
   };
 
   it("rejects invalid freelancer", async () => {
-    const deadline = Math.floor(Date.now() / 1000) + 3600;
     try {
-      await escrow.createProject("0x0000000000000000000000000000000000000000", arbiter, "X", deadline, { from: client });
+      await escrow.createProject("0x0000000000000000000000000000000000000000", arbiter, "X", { from: client });
       assert.fail("expected revert");
     } catch (e) {
       assert(e.message.includes("Invalid freelancer address"));

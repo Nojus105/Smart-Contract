@@ -10,19 +10,19 @@
           "type": "uint256"
         },
         {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "milestoneIndex",
-          "type": "uint256"
+          "indexed": true,
+          "internalType": "address",
+          "name": "client",
+          "type": "address"
         },
         {
-          "indexed": false,
-          "internalType": "bool",
-          "name": "approvedByArbiter",
-          "type": "bool"
+          "indexed": true,
+          "internalType": "address",
+          "name": "freelancer",
+          "type": "address"
         }
       ],
-      "name": "DisputeResolved",
+      "name": "ProjectCreated",
       "type": "event"
     },
     {
@@ -48,6 +48,44 @@
         }
       ],
       "name": "MilestoneAdded",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "projectId",
+          "type": "uint256"
+        }
+      ],
+      "name": "ProjectStarted",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "projectId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "milestoneIndex",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "deliverableHash",
+          "type": "string"
+        }
+      ],
+      "name": "MilestoneSubmitted",
       "type": "event"
     },
     {
@@ -111,50 +149,12 @@
         },
         {
           "indexed": false,
-          "internalType": "string",
-          "name": "deliverableHash",
-          "type": "string"
+          "internalType": "bool",
+          "name": "approvedByArbiter",
+          "type": "bool"
         }
       ],
-      "name": "MilestoneSubmitted",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "uint256",
-          "name": "projectId",
-          "type": "uint256"
-        },
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "freelancer",
-          "type": "address"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "amount",
-          "type": "uint256"
-        }
-      ],
-      "name": "PaymentReleased",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "uint256",
-          "name": "projectId",
-          "type": "uint256"
-        }
-      ],
-      "name": "ProjectCancelled",
+      "name": "DisputeResolved",
       "type": "event"
     },
     {
@@ -171,103 +171,6 @@
       "type": "event"
     },
     {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "uint256",
-          "name": "projectId",
-          "type": "uint256"
-        },
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "client",
-          "type": "address"
-        },
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "freelancer",
-          "type": "address"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "totalAmount",
-          "type": "uint256"
-        }
-      ],
-      "name": "ProjectCreated",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "uint256",
-          "name": "projectId",
-          "type": "uint256"
-        }
-      ],
-      "name": "ProjectStarted",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "uint256",
-          "name": "projectId",
-          "type": "uint256"
-        },
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "client",
-          "type": "address"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "amount",
-          "type": "uint256"
-        }
-      ],
-      "name": "RefundIssued",
-      "type": "event"
-    },
-    {
-      "inputs": [],
-      "name": "APPROVAL_DEADLINE",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function",
-      "constant": true
-    },
-    {
-      "inputs": [],
-      "name": "ARBITER_FEE_PERCENTAGE",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function",
-      "constant": true
-    },
-    {
       "inputs": [],
       "name": "projectCounter",
       "outputs": [
@@ -278,24 +181,10 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function",
-      "constant": true
+      "type": "function"
     },
     {
       "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "name": "projects",
-      "outputs": [
-        {
-          "internalType": "address payable",
-          "name": "client",
-          "type": "address"
-        },
         {
           "internalType": "address payable",
           "name": "freelancer",
@@ -310,75 +199,13 @@
           "internalType": "string",
           "name": "projectDescription",
           "type": "string"
-        },
-        {
-          "internalType": "uint256",
-          "name": "totalAmount",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "arbiterFee",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "createdAt",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "deadline",
-          "type": "uint256"
-        },
-        {
-          "internalType": "enum FreelanceEscrow.ProjectStatus",
-          "name": "status",
-          "type": "uint8"
-        },
-        {
-          "internalType": "uint256",
-          "name": "paidAmount",
-          "type": "uint256"
-        },
-        {
-          "internalType": "bool",
-          "name": "arbiterPaid",
-          "type": "bool"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function",
-      "constant": true
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address payable",
-          "name": "_freelancer",
-          "type": "address"
-        },
-        {
-          "internalType": "address payable",
-          "name": "_arbiter",
-          "type": "address"
-        },
-        {
-          "internalType": "string",
-          "name": "_projectDescription",
-          "type": "string"
-        },
-        {
-          "internalType": "uint256",
-          "name": "_deadline",
-          "type": "uint256"
         }
       ],
       "name": "createProject",
       "outputs": [
         {
           "internalType": "uint256",
-          "name": "",
+          "name": "id",
           "type": "uint256"
         }
       ],
@@ -389,17 +216,17 @@
       "inputs": [
         {
           "internalType": "uint256",
-          "name": "_projectId",
+          "name": "id",
           "type": "uint256"
         },
         {
           "internalType": "string",
-          "name": "_description",
+          "name": "description",
           "type": "string"
         },
         {
           "internalType": "uint256",
-          "name": "_amount",
+          "name": "amount",
           "type": "uint256"
         }
       ],
@@ -412,31 +239,30 @@
       "inputs": [
         {
           "internalType": "uint256",
-          "name": "_projectId",
+          "name": "id",
           "type": "uint256"
         }
       ],
       "name": "startProject",
       "outputs": [],
       "stateMutability": "payable",
-      "type": "function",
-      "payable": true
+      "type": "function"
     },
     {
       "inputs": [
         {
           "internalType": "uint256",
-          "name": "_projectId",
+          "name": "id",
           "type": "uint256"
         },
         {
           "internalType": "uint256",
-          "name": "_milestoneIndex",
+          "name": "milestoneIndex",
           "type": "uint256"
         },
         {
           "internalType": "string",
-          "name": "_deliverableHash",
+          "name": "deliverableHash",
           "type": "string"
         }
       ],
@@ -449,12 +275,12 @@
       "inputs": [
         {
           "internalType": "uint256",
-          "name": "_projectId",
+          "name": "id",
           "type": "uint256"
         },
         {
           "internalType": "uint256",
-          "name": "_milestoneIndex",
+          "name": "milestoneIndex",
           "type": "uint256"
         }
       ],
@@ -467,30 +293,12 @@
       "inputs": [
         {
           "internalType": "uint256",
-          "name": "_projectId",
+          "name": "id",
           "type": "uint256"
         },
         {
           "internalType": "uint256",
-          "name": "_milestoneIndex",
-          "type": "uint256"
-        }
-      ],
-      "name": "autoApproveMilestone",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "_projectId",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "_milestoneIndex",
+          "name": "milestoneIndex",
           "type": "uint256"
         }
       ],
@@ -503,17 +311,17 @@
       "inputs": [
         {
           "internalType": "uint256",
-          "name": "_projectId",
+          "name": "id",
           "type": "uint256"
         },
         {
           "internalType": "uint256",
-          "name": "_milestoneIndex",
+          "name": "milestoneIndex",
           "type": "uint256"
         },
         {
           "internalType": "bool",
-          "name": "_approveFreelancer",
+          "name": "approveFreelancer",
           "type": "bool"
         }
       ],
@@ -526,33 +334,7 @@
       "inputs": [
         {
           "internalType": "uint256",
-          "name": "_projectId",
-          "type": "uint256"
-        }
-      ],
-      "name": "cancelProject",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "_projectId",
-          "type": "uint256"
-        }
-      ],
-      "name": "requestRefund",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "_projectId",
+          "name": "id",
           "type": "uint256"
         }
       ],
@@ -589,7 +371,7 @@
           "type": "uint256"
         },
         {
-          "internalType": "enum FreelanceEscrow.ProjectStatus",
+          "internalType": "uint8",
           "name": "status",
           "type": "uint8"
         },
@@ -600,19 +382,18 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function",
-      "constant": true
+      "type": "function"
     },
     {
       "inputs": [
         {
           "internalType": "uint256",
-          "name": "_projectId",
+          "name": "id",
           "type": "uint256"
         },
         {
           "internalType": "uint256",
-          "name": "_milestoneIndex",
+          "name": "milestoneIndex",
           "type": "uint256"
         }
       ],
@@ -629,7 +410,7 @@
           "type": "uint256"
         },
         {
-          "internalType": "enum FreelanceEscrow.MilestoneStatus",
+          "internalType": "uint8",
           "name": "status",
           "type": "uint8"
         },
@@ -645,22 +426,7 @@
         }
       ],
       "stateMutability": "view",
-      "type": "function",
-      "constant": true
-    },
-    {
-      "inputs": [],
-      "name": "getContractBalance",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function",
-      "constant": true
+      "type": "function"
     }
   ]
 }

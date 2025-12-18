@@ -17,7 +17,7 @@ const ActionButton = ({ onClick, children, disabled, variant = 'primary', size =
 
 const Dashboard = () => {
   const { account, balance, connectWallet, disconnectWallet, contract, web3, isConnected, loading } = useWeb3()
-  const [form, setForm] = useState({ freelancer: '', arbiter: '', description: '', deadline: '' })
+  const [form, setForm] = useState({ freelancer: '', arbiter: '', description: '' })
   const [milestonesTextValue, setMilestonesTextValue] = useState('0.1:Design draft\n0.2:Final delivery')
   const [projects, setProjects] = useState([])
   const [busy, setBusy] = useState(false)
@@ -81,13 +81,12 @@ const Dashboard = () => {
     if (!web3.utils.isAddress(form.freelancer) || !web3.utils.isAddress(form.arbiter)) {
       return show('Invalid freelancer or arbiter address')
     }
-    const deadline = Math.floor(new Date(form.deadline).getTime() / 1000)
-    if (!deadline || deadline <= Date.now() / 1000) return show('Set a future deadline')
+
 
     setBusy(true)
     try {
       const created = await contract.methods
-        .createProject(form.freelancer, form.arbiter, form.description || 'Project', deadline)
+        .createProject(form.freelancer, form.arbiter, form.description || 'Project')
         .send({ from: account })
       const projectId = created.events.ProjectCreated.returnValues.projectId
 
@@ -241,15 +240,7 @@ const Dashboard = () => {
                 required
               />
             </label>
-            <label className="field">
-              <span>Deadline</span>
-              <input
-                type="datetime-local"
-                value={form.deadline}
-                onChange={(e) => setForm({ ...form, deadline: e.target.value })}
-                required
-              />
-            </label>
+
             <label className="field field-full">
               <span>Milestones</span>
               <textarea
@@ -268,7 +259,7 @@ const Dashboard = () => {
             <ActionButton
               onClick={(e) => {
                 e.preventDefault()
-                setForm({ freelancer: '', arbiter: '', description: '', deadline: '' })
+                setForm({ freelancer: '', arbiter: '', description: '' })
                 setMilestonesTextValue('0.1:Design draft\n0.2:Final delivery')
                 show('')
               }}
